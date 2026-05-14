@@ -61,6 +61,7 @@ function getStablefordPoints(score, par) {
 function App() {
   const [players, setPlayers] = useState(defaultPlayers);
   const [activeRoundId, setActiveRoundId] = useState(1);
+  const [activeHole, setActiveHole] = useState(1);
   const [scores, setScores] = useState({});
 
   const [teams, setTeams] = useState({
@@ -126,6 +127,7 @@ function App() {
   function updateTeam(roundId, teamIndex, playerIndex, value) {
     setTeams((previousTeams) => {
       const updatedTeams = { ...previousTeams };
+
       updatedTeams[roundId] = updatedTeams[roundId].map((team, index) => {
         if (index !== teamIndex) return team;
 
@@ -239,13 +241,11 @@ function App() {
   return (
     <div className="app">
       <header className="hero">
-        <div>
-          <p className="eyebrow">Golf Trip Scoreboard</p>
-          <h1>Covid Classic</h1>
-          <p className="subtitle">
-            Track Best Ball Stableford, 2-Man Scramble, and Singles Matches.
-          </p>
-        </div>
+        <p className="eyebrow">Golf Trip Scoreboard</p>
+        <h1>Covid Classic</h1>
+        <p className="subtitle">
+          Track Best Ball Stableford, 2-Man Scramble, and Singles Matches.
+        </p>
       </header>
 
       <div className="round-buttons">
@@ -253,7 +253,10 @@ function App() {
           <button
             key={round.id}
             className={activeRoundId === round.id ? "active" : ""}
-            onClick={() => setActiveRoundId(round.id)}
+            onClick={() => {
+              setActiveRoundId(round.id);
+              setActiveHole(1);
+            }}
           >
             {round.name}
           </button>
@@ -276,6 +279,56 @@ function App() {
             <button className="secondary" onClick={resetCurrentRound}>
               Reset Round
             </button>
+          </div>
+
+          <div className="mobile-score-entry">
+            <div className="mobile-hole-header">
+              <div>
+                <h3>Hole {activeHole}</h3>
+                <p>Par {course.par[activeHole - 1]}</p>
+              </div>
+
+              <select
+                value={activeHole}
+                onChange={(event) => setActiveHole(Number(event.target.value))}
+              >
+                {course.par.map((_, index) => (
+                  <option key={index + 1} value={index + 1}>
+                    Hole {index + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="hole-nav">
+              {course.par.map((_, index) => (
+                <button
+                  key={index + 1}
+                  className={activeHole === index + 1 ? "active-hole" : ""}
+                  onClick={() => setActiveHole(index + 1)}
+                >
+                  {index + 1}
+                </button>
+              ))}
+            </div>
+
+            <div className="mobile-player-scores">
+              {players.map((player) => (
+                <div className="mobile-player-row" key={player}>
+                  <span>{player}</span>
+
+                  <input
+                    type="number"
+                    min="1"
+                    value={getScore(player, activeHole)}
+                    onChange={(event) =>
+                      updateScore(player, activeHole, event.target.value)
+                    }
+                    placeholder="-"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="table-wrap">
