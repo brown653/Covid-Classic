@@ -22,42 +22,26 @@ const courses = {
   jackFrost: {
     name: "Jack Frost National",
     par: [4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 3, 5, 4, 4, 4, 3, 4, 5],
+    hcp: [11, 5, 17, 7, 15, 3, 9, 13, 1, 8, 18, 2, 10, 6, 14, 16, 12, 4],
   },
   ballyowen: {
     name: "Ballyowen",
     par: [4, 4, 5, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 4, 3, 4, 5, 4],
+    hcp: [13, 11, 3, 17, 5, 15, 1, 7, 9, 12, 18, 14, 8, 4, 16, 2, 10, 6],
   },
 };
 
 const rounds = [
-  {
-    id: 1,
-    name: "Round 1",
-    shortName: "R1",
-    courseKey: "jackFrost",
-    format: "Best Ball Stableford",
-  },
-  {
-    id: 2,
-    name: "Round 2",
-    shortName: "R2",
-    courseKey: "jackFrost",
-    format: "2-Man Scramble",
-  },
-  {
-    id: 3,
-    name: "Round 3",
-    shortName: "R3",
-    courseKey: "ballyowen",
-    format: "Singles Matches",
-  },
+  { id: 1, name: "Round 1", shortName: "R1", courseKey: "jackFrost", format: "Best Ball Stableford" },
+  { id: 2, name: "Round 2", shortName: "R2", courseKey: "jackFrost", format: "2-Man Scramble" },
+  { id: 3, name: "Round 3", shortName: "R3", courseKey: "ballyowen", format: "Singles Matches" },
 ];
 
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
 function getStablefordPoints(score, par) {
-  if (!score) return 0;
+  if (!score && score !== 0) return 0;
   const diff = Number(score) - par;
 
   if (diff <= -3) return 5;
@@ -79,6 +63,7 @@ function App() {
   const [selectedRoundId, setSelectedRoundId] = useState(1);
   const [selectedMatchupId, setSelectedMatchupId] = useState(null);
   const [scores, setScores] = useState({});
+  const [handicaps, setHandicaps] = useState({});
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
   const [teams, setTeams] = useState({
@@ -104,20 +89,17 @@ function App() {
     async function loadScores() {
       const { data, error } = await supabase.from("golf_scores").select("*");
 
-    if (error) {
-  console.error("Error loading scores:", error);
-  setConnectionStatus(`Offline: ${error.message}`);
-  return;
-}
+      if (error) {
+        console.error("Error loading scores:", error);
+        setConnectionStatus(`Offline: ${error.message}`);
+        return;
+      }
 
       const loadedScores = {};
 
       data.forEach((row) => {
         if (!loadedScores[row.round_id]) loadedScores[row.round_id] = {};
-        if (!loadedScores[row.round_id][row.player]) {
-          loadedScores[row.round_id][row.player] = {};
-        }
-
+        if (!loadedScores[row.round_id][row.player]) loadedScores[row.round_id][row.player] = {};
         loadedScores[row.round_id][row.player][row.hole] =
           row.score === null ? "" : String(row.score);
       });
@@ -126,20 +108,32 @@ function App() {
       setConnectionStatus("Live");
     }
 
-    loadScores();
+    async function loadHandicaps() {
+      const { data, error } = await supabase.from("golf_handicaps").select("*");
 
-    const channel = supabase
+      if (error) {
+        console.error("Error loading handicaps:", error);
+        return;
+      }
+
+      const loadedHandicaps = {};
+      data.forEach((row) => {
+        loadedHandicaps[row.player] = row.strokes || 0;
+      });
+
+      setHandicaps(loadedHandicaps);
+    }
+
+    loadScores();
+    loadHandicaps();
+
+    const scoreChannel = supabase
       .channel("live-golf-scores")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "golf_scores",
-        },
+        { event: "*", schema: "public", table: "golf_scores" },
         (payload) => {
           const row = payload.new;
-
           if (!row) return;
 
           setScores((previousScores) => ({
@@ -155,13 +149,29 @@ function App() {
         }
       )
       .subscribe((status) => {
-        if (status === "SUBSCRIBED") {
-          setConnectionStatus("Live");
-        }
+        if (status === "SUBSCRIBED") setConnectionStatus("Live");
       });
 
+    const handicapChannel = supabase
+      .channel("live-golf-handicaps")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "golf_handicaps" },
+        (payload) => {
+          const row = payload.new;
+          if (!row) return;
+
+          setHandicaps((previousHandicaps) => ({
+            ...previousHandicaps,
+            [row.player]: row.strokes || 0,
+          }));
+        }
+      )
+      .subscribe();
+
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(scoreChannel);
+      supabase.removeChannel(handicapChannel);
     };
   }, []);
 
@@ -191,13 +201,36 @@ function App() {
         score: cleanScore,
         updated_at: new Date().toISOString(),
       },
-      {
-        onConflict: "round_id,player,hole",
-      }
+      { onConflict: "round_id,player,hole" }
     );
 
     if (error) {
       console.error("Error saving score:", error);
+      setConnectionStatus("Save Error");
+    } else {
+      setConnectionStatus("Live");
+    }
+  }
+
+  async function updateHandicap(player, value) {
+    const cleanStrokes = value === "" ? 0 : Number(value);
+
+    setHandicaps((previousHandicaps) => ({
+      ...previousHandicaps,
+      [player]: cleanStrokes,
+    }));
+
+    const { error } = await supabase.from("golf_handicaps").upsert(
+      {
+        player,
+        strokes: cleanStrokes,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "player" }
+    );
+
+    if (error) {
+      console.error("Error saving handicap:", error);
       setConnectionStatus("Save Error");
     } else {
       setConnectionStatus("Live");
@@ -226,11 +259,45 @@ function App() {
     }));
   }
 
-  function getPlayerTotal(roundId, player, start = 1, end = 18) {
+  function getRound(roundId) {
+    return rounds.find((round) => round.id === roundId);
+  }
+
+  function getCourse(roundId) {
+    return courses[getRound(roundId).courseKey];
+  }
+
+  function handicapApplies(roundId) {
+    return roundId === 1 || roundId === 3;
+  }
+
+  function getHoleStrokes(roundId, player, holeNumber) {
+    if (!handicapApplies(roundId)) return 0;
+
+    const totalStrokes = Number(handicaps[player] || 0);
+    if (!totalStrokes) return 0;
+
+    const course = getCourse(roundId);
+    const holeHcp = course.hcp[holeNumber - 1];
+
+    const baseStrokes = Math.floor(totalStrokes / 18);
+    const extraStrokes = totalStrokes % 18;
+
+    return baseStrokes + (holeHcp <= extraStrokes ? 1 : 0);
+  }
+
+  function getNetScore(roundId, player, holeNumber) {
+    const gross = Number(getScore(roundId, player, holeNumber));
+    if (!gross) return "";
+    return gross - getHoleStrokes(roundId, player, holeNumber);
+  }
+
+  function getPlayerTotal(roundId, player, start = 1, end = 18, net = false) {
     let total = 0;
 
     for (let hole = start; hole <= end; hole++) {
-      total += Number(getScore(roundId, player, hole) || 0);
+      const score = net ? getNetScore(roundId, player, hole) : getScore(roundId, player, hole);
+      total += Number(score || 0);
     }
 
     return total;
@@ -263,13 +330,13 @@ function App() {
       if (teamAHasScore && teamBHasScore) {
         const teamABest = Math.max(
           ...teamA.map((player) =>
-            getStablefordPoints(getScore(1, player, hole), par)
+            getStablefordPoints(getNetScore(1, player, hole), par)
           )
         );
 
         const teamBBest = Math.max(
           ...teamB.map((player) =>
-            getStablefordPoints(getScore(1, player, hole), par)
+            getStablefordPoints(getNetScore(1, player, hole), par)
           )
         );
 
@@ -333,12 +400,12 @@ function App() {
     let holesCounted = 0;
 
     for (let hole = start; hole <= end; hole++) {
-      const scoreA = Number(getScore(3, playerA, hole));
-      const scoreB = Number(getScore(3, playerB, hole));
+      const netA = Number(getNetScore(3, playerA, hole));
+      const netB = Number(getNetScore(3, playerB, hole));
 
-      if (scoreA && scoreB) {
-        if (scoreA < scoreB) teamAScore += 1;
-        if (scoreB < scoreA) teamBScore += 1;
+      if (netA && netB) {
+        if (netA < netB) teamAScore += 1;
+        if (netB < netA) teamBScore += 1;
         holesCounted += 1;
       }
     }
@@ -412,7 +479,7 @@ function App() {
       2: { ...roundTwo, label: "Round 2", format: "Scramble" },
       3: { ...roundThree, label: "Round 3", format: "Singles" },
     };
-  }, [scores, teams]);
+  }, [scores, teams, handicaps]);
 
   const weekendScore = useMemo(() => {
     let team1 = 0;
@@ -594,9 +661,16 @@ function App() {
     const back = getPlayerTotal(roundId, player, 10, 18);
     const total = front + back;
 
+    const netFront = getPlayerTotal(roundId, player, 1, 9, true);
+    const netBack = getPlayerTotal(roundId, player, 10, 18, true);
+    const showNet = handicapApplies(roundId);
+
     return (
       <tr key={player}>
-        <td className="scorecard-name">{player}</td>
+        <td className="scorecard-name">
+          {player}
+          {showNet && <small className="net-note"> Net {netFront + netBack || "-"}</small>}
+        </td>
 
         {FRONT_HOLES.map((hole) => (
           <td key={hole}>
@@ -609,10 +683,13 @@ function App() {
                 updateScore(roundId, player, hole, event.target.value)
               }
             />
+            {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
+              <div className="pop-dot">-{getHoleStrokes(roundId, player, hole)}</div>
+            )}
           </td>
         ))}
 
-        <td className="score-total">{front || "-"}</td>
+        <td className="score-total">{showNet ? `${front || "-"} / ${netFront || "-"}` : front || "-"}</td>
 
         {BACK_HOLES.map((hole) => (
           <td key={hole}>
@@ -625,11 +702,14 @@ function App() {
                 updateScore(roundId, player, hole, event.target.value)
               }
             />
+            {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
+              <div className="pop-dot">-{getHoleStrokes(roundId, player, hole)}</div>
+            )}
           </td>
         ))}
 
-        <td className="score-total">{back || "-"}</td>
-        <td className="score-total">{total || "-"}</td>
+        <td className="score-total">{showNet ? `${back || "-"} / ${netBack || "-"}` : back || "-"}</td>
+        <td className="score-total">{showNet ? `${total || "-"} / ${netFront + netBack || "-"}` : total || "-"}</td>
       </tr>
     );
   }
@@ -709,28 +789,16 @@ function App() {
 
         {!selectedMatchup && (
           <nav className="nav-tabs">
-            <button
-              className={activeTab === "home" ? "active" : ""}
-              onClick={() => setActiveTab("home")}
-            >
+            <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>
               Scoreboard
             </button>
-            <button
-              className={activeTab === "enter" ? "active" : ""}
-              onClick={() => setActiveTab("enter")}
-            >
+            <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>
               Enter Scores
             </button>
-            <button
-              className={activeTab === "matchups" ? "active" : ""}
-              onClick={() => setActiveTab("matchups")}
-            >
+            <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>
               Matchups
             </button>
-            <button
-              className={activeTab === "setup" ? "active" : ""}
-              onClick={() => setActiveTab("setup")}
-            >
+            <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>
               Setup
             </button>
           </nav>
@@ -781,9 +849,7 @@ function App() {
               >
                 <p>{round.label}</p>
                 <h3>{round.format}</h3>
-                <strong>
-                  {formatPoints(team1)} - {formatPoints(team2)}
-                </strong>
+                <strong>{formatPoints(team1)} - {formatPoints(team2)}</strong>
                 <span>{getSegmentStatus(round.full)}</span>
               </button>
             );
@@ -793,8 +859,8 @@ function App() {
         <section className="main-card">
           <div className="section-title">
             <div>
-              <p>Live Board</p>
-              <h2>Featured Matchups</h2>
+              <p>Match Center</p>
+              <h2>Live Matchups</h2>
             </div>
           </div>
 
@@ -814,9 +880,7 @@ function App() {
                     <span>{summary.status}</span>
                   </div>
 
-                  <strong>
-                    {summary.full.teamAScore} - {summary.full.teamBScore}
-                  </strong>
+                  <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
                 </button>
               );
             })}
@@ -834,6 +898,9 @@ function App() {
 
     const frontTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9);
     const backTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18);
+    const netFront = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9, true);
+    const netBack = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18, true);
+    const showNet = handicapApplies(selectedRoundId);
 
     return (
       <section className="entry-layout">
@@ -842,22 +909,14 @@ function App() {
           <h2>Find Your Card</h2>
 
           <label>Player</label>
-          <select
-            value={selectedPlayer}
-            onChange={(event) => setSelectedPlayer(event.target.value)}
-          >
+          <select value={selectedPlayer} onChange={(event) => setSelectedPlayer(event.target.value)}>
             {players.map((player) => (
-              <option key={player} value={player}>
-                {player}
-              </option>
+              <option key={player} value={player}>{player}</option>
             ))}
           </select>
 
           <label>Round</label>
-          <select
-            value={selectedRoundId}
-            onChange={(event) => setSelectedRoundId(Number(event.target.value))}
-          >
+          <select value={selectedRoundId} onChange={(event) => setSelectedRoundId(Number(event.target.value))}>
             {rounds.map((roundOption) => (
               <option key={roundOption.id} value={roundOption.id}>
                 {roundOption.name} · {roundOption.format}
@@ -870,6 +929,12 @@ function App() {
             <strong>{frontTotal + backTotal || "-"}</strong>
             <small>
               OUT {frontTotal || "-"} · IN {backTotal || "-"}
+              {showNet && (
+                <>
+                  <br />
+                  NET {netFront + netBack || "-"} · Strokes {handicaps[scoringPlayer] || 0}
+                </>
+              )}
             </small>
           </div>
         </aside>
@@ -886,12 +951,18 @@ function App() {
           <div className="hole-list">
             {course.par.map((par, index) => {
               const hole = index + 1;
+              const pops = getHoleStrokes(selectedRoundId, scoringPlayer, hole);
+              const netScore = getNetScore(selectedRoundId, scoringPlayer, hole);
 
               return (
                 <div className="hole-row" key={hole}>
                   <div>
                     <strong>Hole {hole}</strong>
-                    <span>Par {par}</span>
+                    <span>
+                      Par {par} · HCP {course.hcp[hole - 1]}
+                      {showNet && pops > 0 ? ` · ${pops} stroke${pops > 1 ? "s" : ""}` : ""}
+                      {showNet && netScore ? ` · Net ${netScore}` : ""}
+                    </span>
                   </div>
 
                   <input
@@ -899,12 +970,7 @@ function App() {
                     min="1"
                     value={getScore(selectedRoundId, scoringPlayer, hole)}
                     onChange={(event) =>
-                      updateScore(
-                        selectedRoundId,
-                        scoringPlayer,
-                        hole,
-                        event.target.value
-                      )
+                      updateScore(selectedRoundId, scoringPlayer, hole, event.target.value)
                     }
                     placeholder="-"
                   />
@@ -951,9 +1017,7 @@ function App() {
                         <span>{summary.status}</span>
                       </div>
 
-                      <strong>
-                        {summary.full.teamAScore} - {summary.full.teamBScore}
-                      </strong>
+                      <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
                     </button>
                   );
                 })}
@@ -968,6 +1032,34 @@ function App() {
   function SetupView() {
     return (
       <>
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Handicap Strokes</h2>
+            </div>
+          </div>
+
+          <div className="players-grid">
+            {players.map((player) => (
+              <div className="handicap-box" key={player}>
+                <label>{player}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={handicaps[player] || ""}
+                  onChange={(event) => updateHandicap(player, event.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            ))}
+          </div>
+
+          <p className="setup-note">
+            Strokes apply to Stableford and Singles only. Scramble remains gross.
+          </p>
+        </section>
+
         <section className="main-card">
           <div className="section-title">
             <div>
@@ -1014,18 +1106,11 @@ function App() {
                         key={playerIndex}
                         value={player}
                         onChange={(event) =>
-                          updateTeam(
-                            round.id,
-                            teamIndex,
-                            playerIndex,
-                            event.target.value
-                          )
+                          updateTeam(round.id, teamIndex, playerIndex, event.target.value)
                         }
                       >
                         {players.map((playerOption) => (
-                          <option key={playerOption} value={playerOption}>
-                            {playerOption}
-                          </option>
+                          <option key={playerOption} value={playerOption}>{playerOption}</option>
                         ))}
                       </select>
                     ))}
@@ -1065,21 +1150,15 @@ function App() {
           <div className="detail-score-boxes">
             <div>
               <span>Front</span>
-              <strong>
-                {summary.front.teamAScore}-{summary.front.teamBScore}
-              </strong>
+              <strong>{summary.front.teamAScore}-{summary.front.teamBScore}</strong>
             </div>
             <div>
               <span>Back</span>
-              <strong>
-                {summary.back.teamAScore}-{summary.back.teamBScore}
-              </strong>
+              <strong>{summary.back.teamAScore}-{summary.back.teamBScore}</strong>
             </div>
             <div>
               <span>Total</span>
-              <strong>
-                {summary.full.teamAScore}-{summary.full.teamBScore}
-              </strong>
+              <strong>{summary.full.teamAScore}-{summary.full.teamBScore}</strong>
             </div>
           </div>
         </section>
@@ -1090,46 +1169,39 @@ function App() {
               <thead>
                 <tr>
                   <th className="scorecard-name">Hole</th>
-                  {FRONT_HOLES.map((hole) => (
-                    <th key={hole}>{hole}</th>
-                  ))}
+                  {FRONT_HOLES.map((hole) => <th key={hole}>{hole}</th>)}
                   <th>OUT</th>
-                  {BACK_HOLES.map((hole) => (
-                    <th key={hole}>{hole}</th>
-                  ))}
+                  {BACK_HOLES.map((hole) => <th key={hole}>{hole}</th>)}
                   <th>IN</th>
                   <th>TOT</th>
                 </tr>
 
                 <tr>
                   <th className="scorecard-name">Par</th>
-                  {course.par.slice(0, 9).map((par, index) => (
-                    <th key={index}>{par}</th>
-                  ))}
+                  {course.par.slice(0, 9).map((par, index) => <th key={index}>{par}</th>)}
                   <th>{outPar}</th>
-                  {course.par.slice(9, 18).map((par, index) => (
-                    <th key={index}>{par}</th>
-                  ))}
+                  {course.par.slice(9, 18).map((par, index) => <th key={index}>{par}</th>)}
                   <th>{inPar}</th>
                   <th>{outPar + inPar}</th>
+                </tr>
+
+                <tr>
+                  <th className="scorecard-name">HCP</th>
+                  {course.hcp.slice(0, 9).map((hcp, index) => <th key={index}>{hcp}</th>)}
+                  <th></th>
+                  {course.hcp.slice(9, 18).map((hcp, index) => <th key={index}>{hcp}</th>)}
+                  <th></th>
+                  <th></th>
                 </tr>
               </thead>
 
               <tbody>
                 {matchup.type === "stableford" && (
                   <>
-                    <tr className="divider">
-                      <td colSpan="22">Team 1</td>
-                    </tr>
-                    {matchup.sideAPlayers.map((player) =>
-                      renderScorecardRow(1, player)
-                    )}
-                    <tr className="divider">
-                      <td colSpan="22">Team 2</td>
-                    </tr>
-                    {matchup.sideBPlayers.map((player) =>
-                      renderScorecardRow(1, player)
-                    )}
+                    <tr className="divider"><td colSpan="22">Team 1</td></tr>
+                    {matchup.sideAPlayers.map((player) => renderScorecardRow(1, player))}
+                    <tr className="divider"><td colSpan="22">Team 2</td></tr>
+                    {matchup.sideBPlayers.map((player) => renderScorecardRow(1, player))}
                   </>
                 )}
 
@@ -1150,24 +1222,14 @@ function App() {
                 <tr className="result-row">
                   <td className="scorecard-name">Result</td>
 
-                  {FRONT_HOLES.map((hole) => (
-                    <td key={hole}>{getHoleResult(matchup, hole)}</td>
-                  ))}
+                  {FRONT_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
 
-                  <td>
-                    {summary.front.teamAScore}-{summary.front.teamBScore}
-                  </td>
+                  <td>{summary.front.teamAScore}-{summary.front.teamBScore}</td>
 
-                  {BACK_HOLES.map((hole) => (
-                    <td key={hole}>{getHoleResult(matchup, hole)}</td>
-                  ))}
+                  {BACK_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
 
-                  <td>
-                    {summary.back.teamAScore}-{summary.back.teamBScore}
-                  </td>
-                  <td>
-                    {summary.full.teamAScore}-{summary.full.teamBScore}
-                  </td>
+                  <td>{summary.back.teamAScore}-{summary.back.teamBScore}</td>
+                  <td>{summary.full.teamAScore}-{summary.full.teamBScore}</td>
                 </tr>
               </tbody>
             </table>
