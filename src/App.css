@@ -1086,3 +1086,18 @@ select {
       linear-gradient(180deg, #0b2f1f 0%, #0f3f2a 34%, #f6f1df 34%, #f6f1df 100%);
   }
 }
+.live-status {
+  margin: 12px 0 0;
+  color: #e8dfb5;
+  background: rgba(11, 47, 31, 0.88);
+  border: 1px solid rgba(201, 162, 39, 0.4);
+  border-radius: 999px;
+  padding: 10px 14px;
+  display: inline-flex;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.live-status.is-live {
+  color: #d9f99d;
+}
