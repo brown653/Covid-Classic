@@ -794,3 +794,295 @@ button {
     font-size: 26px;
   }
 }
+/* Masters-style theme override */
+
+:root {
+  --bg: #f6f1df;
+  --panel: #ffffff;
+  --panel-2: #f9f4df;
+  --card: #ffffff;
+  --text: #123524;
+  --dark: #0b2f1f;
+  --muted: #6f735d;
+  --line: rgba(255, 255, 255, 0.16);
+  --red: #c9a227;
+  --red-dark: #9f7f1f;
+  --green: #0b5d35;
+  --soft: #fbf7e6;
+  --border: #e3d7ae;
+}
+
+body {
+  background:
+    radial-gradient(circle at top left, rgba(201, 162, 39, 0.22), transparent 28%),
+    linear-gradient(180deg, #0b2f1f 0%, #0f3f2a 42%, #f6f1df 42%, #f6f1df 100%);
+  color: #123524;
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+button,
+input,
+select {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.hero {
+  background:
+    linear-gradient(135deg, rgba(11, 47, 31, 0.98), rgba(13, 93, 53, 0.96));
+  border: 1px solid rgba(201, 162, 39, 0.35);
+  box-shadow: 0 24px 60px rgba(11, 47, 31, 0.4);
+}
+
+.hero-left p {
+  color: #f1d67a;
+}
+
+.hero-left h1 {
+  color: #fff8dc;
+  font-weight: 900;
+}
+
+.hero-left span {
+  color: #e8dfb5;
+}
+
+.scorebug {
+  background: #fff8dc;
+  border: 2px solid #c9a227;
+  color: #0b2f1f;
+}
+
+.scorebug span {
+  color: #0b5d35;
+}
+
+.scorebug strong {
+  color: #0b2f1f;
+}
+
+.scorebug b {
+  color: #c9a227;
+}
+
+.nav-tabs {
+  background: #0b2f1f;
+  border: 1px solid rgba(201, 162, 39, 0.45);
+}
+
+.nav-tabs button {
+  color: #f6f1df;
+}
+
+.nav-tabs button.active {
+  background: #c9a227;
+  color: #0b2f1f;
+  box-shadow: 0 10px 24px rgba(201, 162, 39, 0.25);
+}
+
+.main-card,
+.entry-picker,
+.phone-scorecard,
+.scorecard-shell {
+  background: #fffdf3;
+  border: 1px solid #e3d7ae;
+  box-shadow: 0 16px 40px rgba(11, 47, 31, 0.1);
+}
+
+.cup-card {
+  background: linear-gradient(135deg, #fffdf3, #f9f4df);
+  border-top: 6px solid #c9a227;
+}
+
+.cup-team {
+  background: #f9f4df;
+  border: 1px solid #e3d7ae;
+}
+
+.cup-team span,
+.section-title p,
+.round-status-card p,
+.matchup-card p,
+.entry-picker p,
+.phone-card-head p {
+  color: #0b5d35;
+}
+
+.cup-team strong,
+.round-status-card strong,
+.matchup-card strong,
+.entry-total-box strong {
+  color: #0b2f1f;
+}
+
+.cup-vs {
+  color: #c9a227;
+}
+
+.round-status-card {
+  background: #fffdf3;
+  border: 1px solid #e3d7ae;
+}
+
+.round-status-card h3,
+.section-title h2,
+.group-head h3,
+.matchup-card h3,
+.entry-picker h2,
+.phone-card-head h2,
+.setup-round h3 {
+  color: #0b2f1f;
+}
+
+.round-status-card span,
+.group-head span,
+.matchup-card span,
+.phone-card-head span,
+.hole-row span,
+.setup-round > span {
+  color: #6f735d;
+}
+
+.matchup-card {
+  background: linear-gradient(135deg, #fffdf3, #f9f4df);
+  border: 1px solid #e3d7ae;
+}
+
+.matchup-card:hover {
+  box-shadow: 0 14px 32px rgba(11, 47, 31, 0.14);
+  border-color: #c9a227;
+}
+
+.entry-picker label {
+  color: #0b5d35;
+}
+
+.entry-picker select,
+.players-grid input,
+.setup-team select,
+.hole-row input,
+.score-input {
+  border: 1px solid #d8c98f;
+  background: #fffdf8;
+  color: #0b2f1f;
+}
+
+.entry-total-box {
+  background: #0b2f1f;
+  border: 1px solid #c9a227;
+}
+
+.entry-total-box span,
+.entry-total-box small {
+  color: #e8dfb5;
+}
+
+.hole-row {
+  background: #f9f4df;
+  border: 1px solid #e3d7ae;
+}
+
+.hole-row strong {
+  color: #0b2f1f;
+}
+
+.setup-round {
+  background: #f9f4df;
+  border: 1px solid #e3d7ae;
+}
+
+.setup-team {
+  border-top: 1px solid #e3d7ae;
+}
+
+.detail-actions button {
+  background: #fffdf3;
+  border: 1px solid #c9a227;
+  color: #0b2f1f;
+}
+
+.detail-actions button:hover {
+  background: #f9f4df;
+}
+
+.detail-hero {
+  background:
+    linear-gradient(135deg, rgba(11, 47, 31, 0.98), rgba(13, 93, 53, 0.96));
+  border: 1px solid rgba(201, 162, 39, 0.35);
+}
+
+.detail-hero p {
+  color: #f1d67a;
+}
+
+.detail-hero h2 {
+  color: #fff8dc;
+}
+
+.detail-hero span {
+  color: #e8dfb5;
+}
+
+.detail-score-boxes div {
+  background: #fff8dc;
+  border: 1px solid #c9a227;
+}
+
+.detail-score-boxes span {
+  color: #0b5d35;
+}
+
+.detail-score-boxes strong {
+  color: #0b2f1f;
+}
+
+.scorecard-wrap {
+  border: 1px solid #e3d7ae;
+}
+
+.scorecard th {
+  background: #0b2f1f;
+  color: #fff8dc;
+  border-bottom: 1px solid #c9a227;
+}
+
+.scorecard td {
+  border-top: 1px solid #e3d7ae;
+}
+
+.scorecard-name {
+  background: #fffdf3;
+  color: #0b2f1f;
+}
+
+.scorecard th.scorecard-name {
+  background: #0b2f1f;
+  color: #fff8dc;
+}
+
+.score-total {
+  background: #f9f4df;
+  color: #0b2f1f;
+}
+
+.divider td {
+  background: #0b5d35;
+  color: #fff8dc;
+}
+
+.result-row td {
+  background: #c9a227;
+  color: #0b2f1f;
+}
+
+.result-row .scorecard-name {
+  background: #c9a227;
+  color: #0b2f1f;
+}
+
+@media (max-width: 650px) {
+  body {
+    background:
+      radial-gradient(circle at top left, rgba(201, 162, 39, 0.22), transparent 24%),
+      linear-gradient(180deg, #0b2f1f 0%, #0f3f2a 34%, #f6f1df 34%, #f6f1df 100%);
+  }
+}
