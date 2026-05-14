@@ -1101,3 +1101,30 @@ select {
 .live-status.is-live {
   color: #d9f99d;
 }
+/* Golf course background override */
+
+body {
+  background:
+    linear-gradient(rgba(8, 28, 18, 0.55), rgba(8, 28, 18, 0.75)),
+    url("/jack-frost-bg.png.png") center center / cover no-repeat fixed !important;
+}
+
+.main-card,
+.entry-picker,
+.phone-scorecard,
+.scorecard-shell {
+  background: rgba(255, 253, 243, 0.94) !important;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 16px 40px rgba(11, 47, 31, 0.22) !important;
+}
+
+.nav-tabs {
+  background: rgba(11, 47, 31, 0.86) !important;
+  backdrop-filter: blur(14px);
+}
+
+.hero,
+.detail-hero {
+  background: rgba(11, 47, 31, 0.9) !important;
+  backdrop-filter: blur(10px);
+}
