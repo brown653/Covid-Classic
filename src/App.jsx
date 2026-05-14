@@ -24,9 +24,27 @@ const courses = {
 };
 
 const rounds = [
-  { id: 1, name: "Round 1", courseKey: "jackFrost", format: "Best Ball Stableford" },
-  { id: 2, name: "Round 2", courseKey: "jackFrost", format: "2-Man Scramble" },
-  { id: 3, name: "Round 3", courseKey: "ballyowen", format: "Singles Matches" },
+  {
+    id: 1,
+    name: "Round 1",
+    shortName: "R1",
+    courseKey: "jackFrost",
+    format: "Best Ball Stableford",
+  },
+  {
+    id: 2,
+    name: "Round 2",
+    shortName: "R2",
+    courseKey: "jackFrost",
+    format: "2-Man Scramble",
+  },
+  {
+    id: 3,
+    name: "Round 3",
+    shortName: "R3",
+    courseKey: "ballyowen",
+    format: "Singles Matches",
+  },
 ];
 
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
@@ -44,9 +62,15 @@ function getStablefordPoints(score, par) {
   return 0;
 }
 
+function formatPoints(value) {
+  return Number.isInteger(value) ? value : value.toFixed(1);
+}
+
 function App() {
   const [players, setPlayers] = useState(defaultPlayers);
-  const [selectedTab, setSelectedTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("home");
+  const [selectedPlayer, setSelectedPlayer] = useState(defaultPlayers[0]);
+  const [selectedRoundId, setSelectedRoundId] = useState(1);
   const [selectedMatchupId, setSelectedMatchupId] = useState(null);
   const [scores, setScores] = useState({});
 
@@ -86,6 +110,10 @@ function App() {
     }));
   }
 
+  function hasScore(roundId, player, holeNumber) {
+    return getScore(roundId, player, holeNumber) !== "";
+  }
+
   function resetRound(roundId) {
     setScores((previousScores) => ({
       ...previousScores,
@@ -93,65 +121,39 @@ function App() {
     }));
   }
 
-  function updatePlayer(index, newName) {
-    const oldName = players[index];
-    const updatedPlayers = [...players];
-    updatedPlayers[index] = newName;
-    setPlayers(updatedPlayers);
-
-    setTeams((previousTeams) => {
-      const updatedTeams = { ...previousTeams };
-
-      Object.keys(updatedTeams).forEach((roundId) => {
-        updatedTeams[roundId] = updatedTeams[roundId].map((team) =>
-          team.map((player) => (player === oldName ? newName : player))
-        );
-      });
-
-      return updatedTeams;
-    });
-  }
-
-  function updateTeam(roundId, teamIndex, playerIndex, value) {
-    setTeams((previousTeams) => {
-      const updatedTeams = { ...previousTeams };
-
-      updatedTeams[roundId] = updatedTeams[roundId].map((team, index) => {
-        if (index !== teamIndex) return team;
-
-        const updatedTeam = [...team];
-        updatedTeam[playerIndex] = value;
-        return updatedTeam;
-      });
-
-      return updatedTeams;
-    });
-  }
-
-  function hasPlayerScore(roundId, player, holeNumber) {
-    return getScore(roundId, player, holeNumber) !== "";
-  }
-
-  function getPlayerTotal(roundId, player, holeStart = 1, holeEnd = 18) {
+  function getPlayerTotal(roundId, player, start = 1, end = 18) {
     let total = 0;
 
-    for (let hole = holeStart; hole <= holeEnd; hole++) {
+    for (let hole = start; hole <= end; hole++) {
       total += Number(getScore(roundId, player, hole) || 0);
     }
 
     return total;
   }
 
-  function getStablefordSegment(teamA, teamB, holeStart, holeEnd) {
+  function getScoringPlayerForRound(roundId, player) {
+    if (roundId !== 2) return player;
+
+    const pair = teams[2].find((team) => team.includes(player));
+    return pair ? pair[0] : player;
+  }
+
+  function getScoreEntryLabel(roundId, player) {
+    if (roundId !== 2) return player;
+
+    const pair = teams[2].find((team) => team.includes(player));
+    return pair ? `${pair[0]} / ${pair[1]} Scramble Score` : player;
+  }
+
+  function getStablefordSegment(teamA, teamB, start, end) {
     let teamAScore = 0;
     let teamBScore = 0;
     let holesCounted = 0;
 
-    for (let hole = holeStart; hole <= holeEnd; hole++) {
+    for (let hole = start; hole <= end; hole++) {
       const par = courses.jackFrost.par[hole - 1];
-
-      const teamAHasScore = teamA.some((player) => hasPlayerScore(1, player, hole));
-      const teamBHasScore = teamB.some((player) => hasPlayerScore(1, player, hole));
+      const teamAHasScore = teamA.some((player) => hasScore(1, player, hole));
+      const teamBHasScore = teamB.some((player) => hasScore(1, player, hole));
 
       if (teamAHasScore && teamBHasScore) {
         const teamABest = Math.max(
@@ -175,17 +177,17 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function getScramblePairSegment(pairA, pairB, holeStart, holeEnd) {
-    const scoringPlayerA = pairA[0];
-    const scoringPlayerB = pairB[0];
+  function getScramblePairSegment(pairA, pairB, start, end) {
+    const playerA = pairA[0];
+    const playerB = pairB[0];
 
     let teamAScore = 0;
     let teamBScore = 0;
     let holesCounted = 0;
 
-    for (let hole = holeStart; hole <= holeEnd; hole++) {
-      const scoreA = Number(getScore(2, scoringPlayerA, hole));
-      const scoreB = Number(getScore(2, scoringPlayerB, hole));
+    for (let hole = start; hole <= end; hole++) {
+      const scoreA = Number(getScore(2, playerA, hole));
+      const scoreB = Number(getScore(2, playerB, hole));
 
       if (scoreA && scoreB) {
         teamAScore += scoreA;
@@ -197,17 +199,17 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: false };
   }
 
-  function getScrambleSideSegment(sideNumber, holeStart, holeEnd) {
-    const sideAPairs = [teams[2][0], teams[2][1]];
-    const sideBPairs = [teams[2][2], teams[2][3]];
+  function getScrambleSideSegment(start, end) {
+    const teamOnePairs = [teams[2][0], teams[2][1]];
+    const teamTwoPairs = [teams[2][2], teams[2][3]];
 
     let teamAScore = 0;
     let teamBScore = 0;
     let holesCounted = 0;
 
-    sideAPairs.forEach((pairA, index) => {
-      const pairB = sideBPairs[index];
-      const result = getScramblePairSegment(pairA, pairB, holeStart, holeEnd);
+    teamOnePairs.forEach((pairA, index) => {
+      const pairB = teamTwoPairs[index];
+      const result = getScramblePairSegment(pairA, pairB, start, end);
 
       teamAScore += result.teamAScore;
       teamBScore += result.teamBScore;
@@ -217,7 +219,7 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: false };
   }
 
-  function getSinglesMatchSegment(match, holeStart, holeEnd) {
+  function getSinglesMatchSegment(match, start, end) {
     const playerA = match[0];
     const playerB = match[1];
 
@@ -225,7 +227,7 @@ function App() {
     let teamBScore = 0;
     let holesCounted = 0;
 
-    for (let hole = holeStart; hole <= holeEnd; hole++) {
+    for (let hole = start; hole <= end; hole++) {
       const scoreA = Number(getScore(3, playerA, hole));
       const scoreB = Number(getScore(3, playerB, hole));
 
@@ -239,13 +241,13 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function getSinglesSideSegment(holeStart, holeEnd) {
+  function getSinglesSideSegment(start, end) {
     let teamAScore = 0;
     let teamBScore = 0;
     let holesCounted = 0;
 
     teams[3].forEach((match) => {
-      const result = getSinglesMatchSegment(match, holeStart, holeEnd);
+      const result = getSinglesMatchSegment(match, start, end);
       teamAScore += result.teamAScore;
       teamBScore += result.teamBScore;
       holesCounted += result.holesCounted;
@@ -282,58 +284,52 @@ function App() {
   }
 
   const roundSegments = useMemo(() => {
-    const stablefordFront = getStablefordSegment(teams[1][0], teams[1][1], 1, 9);
-    const stablefordBack = getStablefordSegment(teams[1][0], teams[1][1], 10, 18);
-    const stablefordFull = getStablefordSegment(teams[1][0], teams[1][1], 1, 18);
+    const roundOne = {
+      front: getStablefordSegment(teams[1][0], teams[1][1], 1, 9),
+      back: getStablefordSegment(teams[1][0], teams[1][1], 10, 18),
+      full: getStablefordSegment(teams[1][0], teams[1][1], 1, 18),
+    };
 
-    const scrambleFront = getScrambleSideSegment(1, 1, 9);
-    const scrambleBack = getScrambleSideSegment(1, 10, 18);
-    const scrambleFull = getScrambleSideSegment(1, 1, 18);
+    const roundTwo = {
+      front: getScrambleSideSegment(1, 9),
+      back: getScrambleSideSegment(10, 18),
+      full: getScrambleSideSegment(1, 18),
+    };
 
-    const singlesFront = getSinglesSideSegment(1, 9);
-    const singlesBack = getSinglesSideSegment(10, 18);
-    const singlesFull = getSinglesSideSegment(1, 18);
+    const roundThree = {
+      front: getSinglesSideSegment(1, 9),
+      back: getSinglesSideSegment(10, 18),
+      full: getSinglesSideSegment(1, 18),
+    };
 
     return {
-      1: {
-        label: "Round 1",
-        format: "Best Ball Stableford",
-        segments: [stablefordFront, stablefordBack, stablefordFull],
-      },
-      2: {
-        label: "Round 2",
-        format: "2-Man Scramble",
-        segments: [scrambleFront, scrambleBack, scrambleFull],
-      },
-      3: {
-        label: "Round 3",
-        format: "Singles Matches",
-        segments: [singlesFront, singlesBack, singlesFull],
-      },
+      1: { ...roundOne, label: "Round 1", format: "Stableford" },
+      2: { ...roundTwo, label: "Round 2", format: "Scramble" },
+      3: { ...roundThree, label: "Round 3", format: "Singles" },
     };
   }, [scores, teams]);
 
-  const overallWeekend = useMemo(() => {
-    let team1Points = 0;
-    let team2Points = 0;
+  const weekendScore = useMemo(() => {
+    let team1 = 0;
+    let team2 = 0;
 
     Object.values(roundSegments).forEach((round) => {
-      round.segments.forEach((segment) => {
-        const [team1, team2] = awardLivePoint(segment);
-        team1Points += team1;
-        team2Points += team2;
+      [round.front, round.back, round.full].forEach((segment) => {
+        const points = awardLivePoint(segment);
+        team1 += points[0];
+        team2 += points[1];
       });
     });
 
-    return { team1Points, team2Points };
+    return { team1, team2 };
   }, [roundSegments]);
 
   const matchupGroups = useMemo(() => {
     return [
       {
         roundId: 1,
-        roundName: "Round 1",
-        roundSubtitle: "Best Ball Stableford",
+        title: "Round 1",
+        subtitle: "Best Ball Stableford",
         items: [
           {
             id: "stableford-main",
@@ -349,8 +345,8 @@ function App() {
       },
       {
         roundId: 2,
-        roundName: "Round 2",
-        roundSubtitle: "2-Man Scramble",
+        title: "Round 2",
+        subtitle: "2-Man Scramble",
         items: [
           {
             id: "scramble-1",
@@ -376,8 +372,8 @@ function App() {
       },
       {
         roundId: 3,
-        roundName: "Round 3",
-        roundSubtitle: "Singles Matches",
+        title: "Round 3",
+        subtitle: "Singles Matches",
         items: teams[3].map((match, index) => ({
           id: `singles-${index + 1}`,
           roundId: 3,
@@ -397,13 +393,13 @@ function App() {
     (matchup) => matchup.id === selectedMatchupId
   );
 
-  function getMatchupSegment(matchup, holeStart, holeEnd) {
+  function getMatchupSegment(matchup, start, end) {
     if (matchup.type === "stableford") {
       return getStablefordSegment(
         matchup.sideAPlayers,
         matchup.sideBPlayers,
-        holeStart,
-        holeEnd
+        start,
+        end
       );
     }
 
@@ -411,15 +407,15 @@ function App() {
       return getScramblePairSegment(
         matchup.sideAPlayers,
         matchup.sideBPlayers,
-        holeStart,
-        holeEnd
+        start,
+        end
       );
     }
 
     return getSinglesMatchSegment(
       [matchup.sideAPlayers[0], matchup.sideBPlayers[0]],
-      holeStart,
-      holeEnd
+      start,
+      end
     );
   }
 
@@ -438,8 +434,8 @@ function App() {
 
   function getHoleResult(matchup, hole) {
     const segment = getMatchupSegment(matchup, hole, hole);
-    if (!segment.holesCounted) return "";
 
+    if (!segment.holesCounted) return "";
     if (segment.teamAScore === segment.teamBScore) return "E";
 
     if (segment.higherIsBetter) {
@@ -449,7 +445,46 @@ function App() {
     return segment.teamAScore < segment.teamBScore ? "T1" : "T2";
   }
 
-  function renderScoreRow(roundId, player) {
+  function updatePlayer(index, newName) {
+    const oldName = players[index];
+    const updatedPlayers = [...players];
+    updatedPlayers[index] = newName;
+    setPlayers(updatedPlayers);
+
+    setTeams((previousTeams) => {
+      const updatedTeams = { ...previousTeams };
+
+      Object.keys(updatedTeams).forEach((roundId) => {
+        updatedTeams[roundId] = updatedTeams[roundId].map((team) =>
+          team.map((player) => (player === oldName ? newName : player))
+        );
+      });
+
+      return updatedTeams;
+    });
+
+    if (selectedPlayer === oldName) {
+      setSelectedPlayer(newName);
+    }
+  }
+
+  function updateTeam(roundId, teamIndex, playerIndex, value) {
+    setTeams((previousTeams) => {
+      const updatedTeams = { ...previousTeams };
+
+      updatedTeams[roundId] = updatedTeams[roundId].map((team, index) => {
+        if (index !== teamIndex) return team;
+
+        const updatedTeam = [...team];
+        updatedTeam[playerIndex] = value;
+        return updatedTeam;
+      });
+
+      return updatedTeams;
+    });
+  }
+
+  function renderScorecardRow(roundId, player) {
     const front = getPlayerTotal(roundId, player, 1, 9);
     const back = getPlayerTotal(roundId, player, 10, 18);
     const total = front + back;
@@ -494,7 +529,7 @@ function App() {
     );
   }
 
-  function renderScrambleScoreRow(pair) {
+  function renderScrambleRow(pair) {
     const scoringPlayer = pair[0];
     const front = getPlayerTotal(2, scoringPlayer, 1, 9);
     const back = getPlayerTotal(2, scoringPlayer, 10, 18);
@@ -540,161 +575,124 @@ function App() {
     );
   }
 
-  function ScorecardView({ matchup }) {
-    const round = rounds.find((item) => item.id === matchup.roundId);
-    const course = courses[round.courseKey];
-    const summary = getMatchupSummary(matchup);
-
-    const outPar = course.par.slice(0, 9).reduce((a, b) => a + b, 0);
-    const inPar = course.par.slice(9, 18).reduce((a, b) => a + b, 0);
-    const totalPar = outPar + inPar;
-
+  function AppShell({ children }) {
     return (
-      <div className="detail-page">
-        <div className="detail-topbar">
-          <button className="back-button" onClick={() => setSelectedMatchupId(null)}>
-            ← Back
-          </button>
-
-          <button className="ghost-button" onClick={() => resetRound(matchup.roundId)}>
-            Reset Round
-          </button>
-        </div>
-
-        <section className="detail-hero">
-          <div>
-            <p className="detail-kicker">{round.name} · {round.format}</p>
-            <h2>{matchup.title}</h2>
-            <p className="detail-status">{summary.status}</p>
+      <div className="app">
+        <header className="hero">
+          <div className="hero-left">
+            <p>Covid Classic</p>
+            <h1>Live Weekend Scoreboard</h1>
+            <span>Jack Frost · Ballyowen · 8-Man Cup</span>
           </div>
 
-          <div className="detail-summary-grid">
-            <div className="summary-box">
-              <span>Front</span>
-              <strong>{summary.front.teamAScore} - {summary.front.teamBScore}</strong>
-            </div>
-            <div className="summary-box">
-              <span>Back</span>
-              <strong>{summary.back.teamAScore} - {summary.back.teamBScore}</strong>
-            </div>
-            <div className="summary-box">
-              <span>Total</span>
-              <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
-            </div>
-          </div>
-        </section>
-
-        <section className="scorecard-card">
-          <div className="scorecard-head">
+          <div className="scorebug">
             <div>
-              <h3>Scorecard</h3>
-              <p>{course.name}</p>
+              <span>Team 1</span>
+              <strong>{formatPoints(weekendScore.team1)}</strong>
+            </div>
+            <b>-</b>
+            <div>
+              <span>Team 2</span>
+              <strong>{formatPoints(weekendScore.team2)}</strong>
             </div>
           </div>
+        </header>
 
-          <div className="scorecard-wrap">
-            <table className="scorecard-table">
-              <thead>
-                <tr>
-                  <th className="scorecard-name">Hole</th>
-                  {FRONT_HOLES.map((hole) => <th key={hole}>{hole}</th>)}
-                  <th>OUT</th>
-                  {BACK_HOLES.map((hole) => <th key={hole}>{hole}</th>)}
-                  <th>IN</th>
-                  <th>TOT</th>
-                </tr>
+        {!selectedMatchup && (
+          <nav className="nav-tabs">
+            <button
+              className={activeTab === "home" ? "active" : ""}
+              onClick={() => setActiveTab("home")}
+            >
+              Scoreboard
+            </button>
+            <button
+              className={activeTab === "enter" ? "active" : ""}
+              onClick={() => setActiveTab("enter")}
+            >
+              Enter Scores
+            </button>
+            <button
+              className={activeTab === "matchups" ? "active" : ""}
+              onClick={() => setActiveTab("matchups")}
+            >
+              Matchups
+            </button>
+            <button
+              className={activeTab === "setup" ? "active" : ""}
+              onClick={() => setActiveTab("setup")}
+            >
+              Setup
+            </button>
+          </nav>
+        )}
 
-                <tr>
-                  <th className="scorecard-name">Par</th>
-                  {course.par.slice(0, 9).map((par, index) => <th key={index}>{par}</th>)}
-                  <th>{outPar}</th>
-                  {course.par.slice(9, 18).map((par, index) => <th key={index}>{par}</th>)}
-                  <th>{inPar}</th>
-                  <th>{totalPar}</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {matchup.type === "stableford" && (
-                  <>
-                    <tr className="divider-row"><td colSpan="22">Team 1</td></tr>
-                    {matchup.sideAPlayers.map((player) => renderScoreRow(1, player))}
-                    <tr className="divider-row"><td colSpan="22">Team 2</td></tr>
-                    {matchup.sideBPlayers.map((player) => renderScoreRow(1, player))}
-                  </>
-                )}
-
-                {matchup.type === "scramble" && (
-                  <>
-                    {renderScrambleScoreRow(matchup.sideAPlayers)}
-                    {renderScrambleScoreRow(matchup.sideBPlayers)}
-                  </>
-                )}
-
-                {matchup.type === "singles" && (
-                  <>
-                    {renderScoreRow(3, matchup.sideAPlayers[0])}
-                    {renderScoreRow(3, matchup.sideBPlayers[0])}
-                  </>
-                )}
-
-                <tr className="result-row">
-                  <td className="scorecard-name">Result</td>
-                  {FRONT_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
-                  <td className="score-total">
-                    {summary.front.teamAScore}-{summary.front.teamBScore}
-                  </td>
-                  {BACK_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
-                  <td className="score-total">
-                    {summary.back.teamAScore}-{summary.back.teamBScore}
-                  </td>
-                  <td className="score-total">
-                    {summary.full.teamAScore}-{summary.full.teamBScore}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
+        {children}
       </div>
     );
   }
 
-  function RoundPanel({ roundId }) {
-    const group = matchupGroups.find((item) => item.roundId === roundId);
-    const round = roundSegments[roundId];
-
+  function HomeView() {
     return (
       <>
-        <section className="panel panel-main">
-          <p className="panel-kicker">{round.label}</p>
-          <h2>{round.format}</h2>
+        <section className="main-card cup-card">
+          <div className="cup-row">
+            <div className="cup-team">
+              <span>Team 1</span>
+              <strong>{formatPoints(weekendScore.team1)}</strong>
+              <small>{teams[1][0].join(" · ")}</small>
+            </div>
 
-          <div className="round-points-grid">
-            {["Front 9", "Back 9", "Full Round"].map((label, index) => {
-              const segment = round.segments[index];
-              const [team1Points, team2Points] = awardLivePoint(segment);
+            <div className="cup-vs">VS</div>
 
-              return (
-                <div className="round-point-box" key={label}>
-                  <span>{label}</span>
-                  <strong>{team1Points} - {team2Points}</strong>
-                  <small>
-                    {segment.teamAScore} - {segment.teamBScore} ·{" "}
-                    {getSegmentStatus(segment)}
-                  </small>
-                </div>
-              );
-            })}
+            <div className="cup-team">
+              <span>Team 2</span>
+              <strong>{formatPoints(weekendScore.team2)}</strong>
+              <small>{teams[1][1].join(" · ")}</small>
+            </div>
           </div>
         </section>
 
-        <section className="panel">
-          <p className="panel-kicker">Live Board</p>
-          <h2>Matchups</h2>
+        <section className="round-strip">
+          {[1, 2, 3].map((roundId) => {
+            const round = roundSegments[roundId];
+            const frontPoints = awardLivePoint(round.front);
+            const backPoints = awardLivePoint(round.back);
+            const fullPoints = awardLivePoint(round.full);
+            const team1 =
+              frontPoints[0] + backPoints[0] + fullPoints[0];
+            const team2 =
+              frontPoints[1] + backPoints[1] + fullPoints[1];
+
+            return (
+              <button
+                className="round-status-card"
+                key={roundId}
+                onClick={() => {
+                  setActiveTab("matchups");
+                }}
+              >
+                <p>{round.label}</p>
+                <h3>{round.format}</h3>
+                <strong>
+                  {formatPoints(team1)} - {formatPoints(team2)}
+                </strong>
+                <span>{getSegmentStatus(round.full)}</span>
+              </button>
+            );
+          })}
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Live Board</p>
+              <h2>Featured Matchups</h2>
+            </div>
+          </div>
 
           <div className="matchup-list">
-            {group.items.map((matchup) => {
+            {flatMatchups.map((matchup) => {
               const summary = getMatchupSummary(matchup);
 
               return (
@@ -703,18 +701,15 @@ function App() {
                   key={matchup.id}
                   onClick={() => setSelectedMatchupId(matchup.id)}
                 >
-                  <div className="matchup-left">
-                    <p className="matchup-label">{group.roundSubtitle}</p>
-                    <h4>{matchup.title}</h4>
+                  <div>
+                    <p>{rounds.find((r) => r.id === matchup.roundId).format}</p>
+                    <h3>{matchup.title}</h3>
                     <span>{summary.status}</span>
                   </div>
 
-                  <div className="matchup-right">
-                    <div className="matchup-main-score">
-                      {summary.full.teamAScore} - {summary.full.teamBScore}
-                    </div>
-                    <small>View Scorecard</small>
-                  </div>
+                  <strong>
+                    {summary.full.teamAScore} - {summary.full.teamBScore}
+                  </strong>
                 </button>
               );
             })}
@@ -724,225 +719,370 @@ function App() {
     );
   }
 
-  return (
-    <div className="app">
-      <header className="app-header">
-        <div>
-          <p className="app-brand">Covid Classic</p>
-          <h1>Weekend Scoreboard</h1>
-          <p className="app-subtitle">Live scoring, matchups, and weekend points.</p>
-        </div>
+  function EnterScoresView() {
+    const round = rounds.find((item) => item.id === selectedRoundId);
+    const course = courses[round.courseKey];
+    const scoringPlayer = getScoringPlayerForRound(selectedRoundId, selectedPlayer);
+    const scoreLabel = getScoreEntryLabel(selectedRoundId, selectedPlayer);
 
-        <div className="weekend-score">
-          <div className="weekend-team">
-            <span>Team 1</span>
-            <strong>{overallWeekend.team1Points}</strong>
+    const frontTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9);
+    const backTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18);
+
+    return (
+      <section className="entry-layout">
+        <aside className="entry-picker">
+          <p>Enter Scores</p>
+          <h2>Find Your Card</h2>
+
+          <label>Player</label>
+          <select
+            value={selectedPlayer}
+            onChange={(event) => setSelectedPlayer(event.target.value)}
+          >
+            {players.map((player) => (
+              <option key={player} value={player}>
+                {player}
+              </option>
+            ))}
+          </select>
+
+          <label>Round</label>
+          <select
+            value={selectedRoundId}
+            onChange={(event) => setSelectedRoundId(Number(event.target.value))}
+          >
+            {rounds.map((roundOption) => (
+              <option key={roundOption.id} value={roundOption.id}>
+                {roundOption.name} · {roundOption.format}
+              </option>
+            ))}
+          </select>
+
+          <div className="entry-total-box">
+            <span>{scoreLabel}</span>
+            <strong>{frontTotal + backTotal || "-"}</strong>
+            <small>
+              OUT {frontTotal || "-"} · IN {backTotal || "-"}
+            </small>
+          </div>
+        </aside>
+
+        <section className="phone-scorecard">
+          <div className="phone-card-head">
+            <div>
+              <p>{round.name}</p>
+              <h2>{scoreLabel}</h2>
+              <span>{course.name}</span>
+            </div>
           </div>
 
-          <div className="weekend-separator">-</div>
+          <div className="hole-list">
+            {course.par.map((par, index) => {
+              const hole = index + 1;
 
-          <div className="weekend-team">
-            <span>Team 2</span>
-            <strong>{overallWeekend.team2Points}</strong>
-          </div>
-        </div>
-      </header>
-
-      {selectedMatchup ? (
-        <ScorecardView matchup={selectedMatchup} />
-      ) : (
-        <>
-          <nav className="top-tabs">
-            <button
-              className={selectedTab === "overview" ? "active-tab" : ""}
-              onClick={() => setSelectedTab("overview")}
-            >
-              Overview
-            </button>
-            <button
-              className={selectedTab === "round1" ? "active-tab" : ""}
-              onClick={() => setSelectedTab("round1")}
-            >
-              Round 1
-            </button>
-            <button
-              className={selectedTab === "round2" ? "active-tab" : ""}
-              onClick={() => setSelectedTab("round2")}
-            >
-              Round 2
-            </button>
-            <button
-              className={selectedTab === "round3" ? "active-tab" : ""}
-              onClick={() => setSelectedTab("round3")}
-            >
-              Round 3
-            </button>
-          </nav>
-
-          {selectedTab === "overview" && (
-            <>
-              <section className="overview-grid">
-                <div className="panel panel-main">
-                  <p className="panel-kicker">Weekend Cup</p>
-                  <h2>Live Overall Leaderboard</h2>
-
-                  <div className="leaderboard-head">
-                    <div className="leader-team">
-                      <span>Team 1</span>
-                      <strong>{overallWeekend.team1Points}</strong>
-                      <small>{teams[1][0].join(" / ")}</small>
-                    </div>
-
-                    <div className="leader-vs">VS</div>
-
-                    <div className="leader-team">
-                      <span>Team 2</span>
-                      <strong>{overallWeekend.team2Points}</strong>
-                      <small>{teams[1][1].join(" / ")}</small>
-                    </div>
+              return (
+                <div className="hole-row" key={hole}>
+                  <div>
+                    <strong>Hole {hole}</strong>
+                    <span>Par {par}</span>
                   </div>
-                </div>
 
-                <div className="panel">
-                  <p className="panel-kicker">Live Points</p>
-                  <h2>Round Status</h2>
-
-                  <div className="round-summary-list">
-                    {[1, 2, 3].map((roundId) => {
-                      const round = roundSegments[roundId];
-                      const points = round.segments.map((segment) =>
-                        awardLivePoint(segment)
-                      );
-
-                      const team1 = points.reduce((sum, point) => sum + point[0], 0);
-                      const team2 = points.reduce((sum, point) => sum + point[1], 0);
-
-                      return (
-                        <div className="round-summary-item" key={roundId}>
-                          <strong>{round.format}</strong>
-                          <span>
-                            Live Points: {team1} - {team2}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </section>
-
-              <section className="panel">
-                <p className="panel-kicker">All Matchups</p>
-                <h2>Live Board</h2>
-
-                <div className="round-board">
-                  {matchupGroups.map((group) => (
-                    <div className="round-group" key={group.roundId}>
-                      <div className="round-group-head">
-                        <h3>{group.roundName}</h3>
-                        <p>{group.roundSubtitle}</p>
-                      </div>
-
-                      <div className="matchup-list">
-                        {group.items.map((matchup) => {
-                          const summary = getMatchupSummary(matchup);
-
-                          return (
-                            <button
-                              className="matchup-card"
-                              key={matchup.id}
-                              onClick={() => setSelectedMatchupId(matchup.id)}
-                            >
-                              <div className="matchup-left">
-                                <p className="matchup-label">{group.roundSubtitle}</p>
-                                <h4>{matchup.title}</h4>
-                                <span>{summary.status}</span>
-                              </div>
-
-                              <div className="matchup-right">
-                                <div className="matchup-main-score">
-                                  {summary.full.teamAScore} - {summary.full.teamBScore}
-                                </div>
-                                <small>View Scorecard</small>
-                              </div>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            </>
-          )}
-
-          {selectedTab === "round1" && <RoundPanel roundId={1} />}
-          {selectedTab === "round2" && <RoundPanel roundId={2} />}
-          {selectedTab === "round3" && <RoundPanel roundId={3} />}
-
-          <details className="setup-panel">
-            <summary>Player Names</summary>
-            <div className="setup-content">
-              <div className="players-grid">
-                {players.map((player, index) => (
                   <input
-                    key={index}
-                    value={player}
-                    onChange={(event) => updatePlayer(index, event.target.value)}
+                    type="number"
+                    min="1"
+                    value={getScore(selectedRoundId, scoringPlayer, hole)}
+                    onChange={(event) =>
+                      updateScore(
+                        selectedRoundId,
+                        scoringPlayer,
+                        hole,
+                        event.target.value
+                      )
+                    }
+                    placeholder="-"
                   />
-                ))}
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      </section>
+    );
+  }
+
+  function MatchupsView() {
+    return (
+      <section className="main-card">
+        <div className="section-title">
+          <div>
+            <p>Match Center</p>
+            <h2>All Matchups</h2>
+          </div>
+        </div>
+
+        <div className="matchup-groups">
+          {matchupGroups.map((group) => (
+            <div className="matchup-group" key={group.roundId}>
+              <div className="group-head">
+                <h3>{group.title}</h3>
+                <span>{group.subtitle}</span>
+              </div>
+
+              <div className="matchup-list">
+                {group.items.map((matchup) => {
+                  const summary = getMatchupSummary(matchup);
+
+                  return (
+                    <button
+                      className="matchup-card"
+                      key={matchup.id}
+                      onClick={() => setSelectedMatchupId(matchup.id)}
+                    >
+                      <div>
+                        <p>{group.subtitle}</p>
+                        <h3>{matchup.title}</h3>
+                        <span>{summary.status}</span>
+                      </div>
+
+                      <strong>
+                        {summary.full.teamAScore} - {summary.full.teamBScore}
+                      </strong>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          </details>
+          ))}
+        </div>
+      </section>
+    );
+  }
 
-          <details className="setup-panel">
-            <summary>Teams & Matchups</summary>
-            <div className="setup-content">
-              <div className="editor-grid">
-                {rounds.map((round) => (
-                  <div className="editor-card" key={round.id}>
-                    <h3>{round.name}</h3>
-                    <p>{round.format}</p>
+  function SetupView() {
+    return (
+      <>
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Player Names</h2>
+            </div>
+          </div>
 
-                    {(teams[round.id] || []).map((team, teamIndex) => (
-                      <div className="team-row" key={teamIndex}>
-                        <span>
-                          {round.format === "Singles Matches"
-                            ? `Match ${teamIndex + 1}`
-                            : `Team ${teamIndex + 1}`}
-                        </span>
+          <div className="players-grid">
+            {players.map((player, index) => (
+              <input
+                key={index}
+                value={player}
+                onChange={(event) => updatePlayer(index, event.target.value)}
+              />
+            ))}
+          </div>
+        </section>
 
-                        <div className="team-selects">
-                          {team.map((player, playerIndex) => (
-                            <select
-                              key={playerIndex}
-                              value={player}
-                              onChange={(event) =>
-                                updateTeam(
-                                  round.id,
-                                  teamIndex,
-                                  playerIndex,
-                                  event.target.value
-                                )
-                              }
-                            >
-                              {players.map((playerOption) => (
-                                <option key={playerOption} value={playerOption}>
-                                  {playerOption}
-                                </option>
-                              ))}
-                            </select>
-                          ))}
-                        </div>
-                      </div>
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Teams & Matches</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            {rounds.map((round) => (
+              <div className="setup-round" key={round.id}>
+                <h3>{round.name}</h3>
+                <span>{round.format}</span>
+
+                {(teams[round.id] || []).map((team, teamIndex) => (
+                  <div className="setup-team" key={teamIndex}>
+                    <strong>
+                      {round.format === "Singles Matches"
+                        ? `Match ${teamIndex + 1}`
+                        : `Team ${teamIndex + 1}`}
+                    </strong>
+
+                    {team.map((player, playerIndex) => (
+                      <select
+                        key={playerIndex}
+                        value={player}
+                        onChange={(event) =>
+                          updateTeam(
+                            round.id,
+                            teamIndex,
+                            playerIndex,
+                            event.target.value
+                          )
+                        }
+                      >
+                        {players.map((playerOption) => (
+                          <option key={playerOption} value={playerOption}>
+                            {playerOption}
+                          </option>
+                        ))}
+                      </select>
                     ))}
                   </div>
                 ))}
               </div>
+            ))}
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  function ScorecardView() {
+    const matchup = selectedMatchup;
+    const round = rounds.find((item) => item.id === matchup.roundId);
+    const course = courses[round.courseKey];
+    const summary = getMatchupSummary(matchup);
+
+    const outPar = course.par.slice(0, 9).reduce((sum, par) => sum + par, 0);
+    const inPar = course.par.slice(9, 18).reduce((sum, par) => sum + par, 0);
+
+    return (
+      <>
+        <div className="detail-actions">
+          <button onClick={() => setSelectedMatchupId(null)}>← Back</button>
+          <button onClick={() => resetRound(matchup.roundId)}>Reset Round</button>
+        </div>
+
+        <section className="detail-hero">
+          <div>
+            <p>{round.name} · {round.format}</p>
+            <h2>{matchup.title}</h2>
+            <span>{summary.status}</span>
+          </div>
+
+          <div className="detail-score-boxes">
+            <div>
+              <span>Front</span>
+              <strong>
+                {summary.front.teamAScore}-{summary.front.teamBScore}
+              </strong>
             </div>
-          </details>
+            <div>
+              <span>Back</span>
+              <strong>
+                {summary.back.teamAScore}-{summary.back.teamBScore}
+              </strong>
+            </div>
+            <div>
+              <span>Total</span>
+              <strong>
+                {summary.full.teamAScore}-{summary.full.teamBScore}
+              </strong>
+            </div>
+          </div>
+        </section>
+
+        <section className="scorecard-shell">
+          <div className="scorecard-wrap">
+            <table className="scorecard">
+              <thead>
+                <tr>
+                  <th className="scorecard-name">Hole</th>
+                  {FRONT_HOLES.map((hole) => (
+                    <th key={hole}>{hole}</th>
+                  ))}
+                  <th>OUT</th>
+                  {BACK_HOLES.map((hole) => (
+                    <th key={hole}>{hole}</th>
+                  ))}
+                  <th>IN</th>
+                  <th>TOT</th>
+                </tr>
+
+                <tr>
+                  <th className="scorecard-name">Par</th>
+                  {course.par.slice(0, 9).map((par, index) => (
+                    <th key={index}>{par}</th>
+                  ))}
+                  <th>{outPar}</th>
+                  {course.par.slice(9, 18).map((par, index) => (
+                    <th key={index}>{par}</th>
+                  ))}
+                  <th>{inPar}</th>
+                  <th>{outPar + inPar}</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {matchup.type === "stableford" && (
+                  <>
+                    <tr className="divider">
+                      <td colSpan="22">Team 1</td>
+                    </tr>
+                    {matchup.sideAPlayers.map((player) =>
+                      renderScorecardRow(1, player)
+                    )}
+                    <tr className="divider">
+                      <td colSpan="22">Team 2</td>
+                    </tr>
+                    {matchup.sideBPlayers.map((player) =>
+                      renderScorecardRow(1, player)
+                    )}
+                  </>
+                )}
+
+                {matchup.type === "scramble" && (
+                  <>
+                    {renderScrambleRow(matchup.sideAPlayers)}
+                    {renderScrambleRow(matchup.sideBPlayers)}
+                  </>
+                )}
+
+                {matchup.type === "singles" && (
+                  <>
+                    {renderScorecardRow(3, matchup.sideAPlayers[0])}
+                    {renderScorecardRow(3, matchup.sideBPlayers[0])}
+                  </>
+                )}
+
+                <tr className="result-row">
+                  <td className="scorecard-name">Result</td>
+
+                  {FRONT_HOLES.map((hole) => (
+                    <td key={hole}>{getHoleResult(matchup, hole)}</td>
+                  ))}
+
+                  <td>
+                    {summary.front.teamAScore}-{summary.front.teamBScore}
+                  </td>
+
+                  {BACK_HOLES.map((hole) => (
+                    <td key={hole}>{getHoleResult(matchup, hole)}</td>
+                  ))}
+
+                  <td>
+                    {summary.back.teamAScore}-{summary.back.teamBScore}
+                  </td>
+                  <td>
+                    {summary.full.teamAScore}-{summary.full.teamBScore}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  return (
+    <AppShell>
+      {selectedMatchup ? (
+        <ScorecardView />
+      ) : (
+        <>
+          {activeTab === "home" && <HomeView />}
+          {activeTab === "enter" && <EnterScoresView />}
+          {activeTab === "matchups" && <MatchupsView />}
+          {activeTab === "setup" && <SetupView />}
         </>
       )}
-    </div>
+    </AppShell>
   );
 }
 
