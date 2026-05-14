@@ -68,8 +68,10 @@ function App() {
 
   const [teams, setTeams] = useState({
     1: [
-      ["Al Brown", "Charles Mayer", "Mike Luddy", "Mike Paladino"],
-      ["Kevin Gilmore", "Jason Spendley", "Brian Riordan", "Pat"],
+      ["Al Brown", "Charles Mayer"],
+      ["Mike Luddy", "Mike Paladino"],
+      ["Kevin Gilmore", "Jason Spendley"],
+      ["Brian Riordan", "Pat"],
     ],
     2: [
       ["Al Brown", "Charles Mayer"],
@@ -349,6 +351,26 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
+  function getStablefordSideSegment(start, end) {
+    const teamOnePairs = [teams[1][0], teams[1][1]];
+    const teamTwoPairs = [teams[1][2], teams[1][3]];
+
+    let teamAScore = 0;
+    let teamBScore = 0;
+    let holesCounted = 0;
+
+    teamOnePairs.forEach((pairA, index) => {
+      const pairB = teamTwoPairs[index];
+      const result = getStablefordSegment(pairA, pairB, start, end);
+
+      teamAScore += result.teamAScore;
+      teamBScore += result.teamBScore;
+      holesCounted += result.holesCounted;
+    });
+
+    return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
+  }
+
   function getScramblePairSegment(pairA, pairB, start, end) {
     const playerA = pairA[0];
     const playerB = pairB[0];
@@ -457,9 +479,9 @@ function App() {
 
   const roundSegments = useMemo(() => {
     const roundOne = {
-      front: getStablefordSegment(teams[1][0], teams[1][1], 1, 9),
-      back: getStablefordSegment(teams[1][0], teams[1][1], 10, 18),
-      full: getStablefordSegment(teams[1][0], teams[1][1], 1, 18),
+      front: getStablefordSideSegment(1, 9),
+      back: getStablefordSideSegment(10, 18),
+      full: getStablefordSideSegment(1, 18),
     };
 
     const roundTwo = {
@@ -504,14 +526,24 @@ function App() {
         subtitle: "Best Ball Stableford",
         items: [
           {
-            id: "stableford-main",
+            id: "stableford-1",
             roundId: 1,
             type: "stableford",
-            title: "Team 1 vs Team 2",
-            sideAName: "Team 1",
-            sideBName: "Team 2",
+            title: `${teams[1][0].join(" / ")} vs ${teams[1][2].join(" / ")}`,
+            sideAName: "Team 1 Pair 1",
+            sideBName: "Team 2 Pair 1",
             sideAPlayers: teams[1][0],
-            sideBPlayers: teams[1][1],
+            sideBPlayers: teams[1][2],
+          },
+          {
+            id: "stableford-2",
+            roundId: 1,
+            type: "stableford",
+            title: `${teams[1][1].join(" / ")} vs ${teams[1][3].join(" / ")}`,
+            sideAName: "Team 1 Pair 2",
+            sideBName: "Team 2 Pair 2",
+            sideAPlayers: teams[1][1],
+            sideBPlayers: teams[1][3],
           },
         ],
       },
@@ -817,7 +849,7 @@ function App() {
             <div className="cup-team">
               <span>Team 1</span>
               <strong>{formatPoints(weekendScore.team1)}</strong>
-              <small>{teams[1][0].join(" · ")}</small>
+              <small>{[...teams[1][0], ...teams[1][1]].join(" · ")}</small>
             </div>
 
             <div className="cup-vs">VS</div>
@@ -825,7 +857,7 @@ function App() {
             <div className="cup-team">
               <span>Team 2</span>
               <strong>{formatPoints(weekendScore.team2)}</strong>
-              <small>{teams[1][1].join(" · ")}</small>
+              <small>{[...teams[1][2], ...teams[1][3]].join(" · ")}</small>
             </div>
           </div>
         </section>
@@ -1098,6 +1130,10 @@ function App() {
                     <strong>
                       {round.format === "Singles Matches"
                         ? `Match ${teamIndex + 1}`
+                        : round.id === 1
+                        ? teamIndex < 2
+                          ? `Team 1 Pair ${teamIndex + 1}`
+                          : `Team 2 Pair ${teamIndex - 1}`
                         : `Team ${teamIndex + 1}`}
                     </strong>
 
@@ -1198,9 +1234,9 @@ function App() {
               <tbody>
                 {matchup.type === "stableford" && (
                   <>
-                    <tr className="divider"><td colSpan="22">Team 1</td></tr>
+                    <tr className="divider"><td colSpan="22">{matchup.sideAName}</td></tr>
                     {matchup.sideAPlayers.map((player) => renderScorecardRow(1, player))}
-                    <tr className="divider"><td colSpan="22">Team 2</td></tr>
+                    <tr className="divider"><td colSpan="22">{matchup.sideBName}</td></tr>
                     {matchup.sideBPlayers.map((player) => renderScorecardRow(1, player))}
                   </>
                 )}
