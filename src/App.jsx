@@ -1,5 +1,11 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import { createClient } from "@supabase/supabase-js";
 import "./App.css";
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_ANON_KEY
+);
 
 const defaultPlayers = [
   "Al Brown",
@@ -73,6 +79,7 @@ function App() {
   const [selectedRoundId, setSelectedRoundId] = useState(1);
   const [selectedMatchupId, setSelectedMatchupId] = useState(null);
   const [scores, setScores] = useState({});
+  const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
   const [teams, setTeams] = useState({
     1: [
@@ -93,11 +100,76 @@ function App() {
     ],
   });
 
+  useEffect(() => {
+    async function loadScores() {
+      const { data, error } = await supabase.from("golf_scores").select("*");
+
+      if (error) {
+        console.error("Error loading scores:", error);
+        setConnectionStatus("Offline");
+        return;
+      }
+
+      const loadedScores = {};
+
+      data.forEach((row) => {
+        if (!loadedScores[row.round_id]) loadedScores[row.round_id] = {};
+        if (!loadedScores[row.round_id][row.player]) {
+          loadedScores[row.round_id][row.player] = {};
+        }
+
+        loadedScores[row.round_id][row.player][row.hole] =
+          row.score === null ? "" : String(row.score);
+      });
+
+      setScores(loadedScores);
+      setConnectionStatus("Live");
+    }
+
+    loadScores();
+
+    const channel = supabase
+      .channel("live-golf-scores")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "golf_scores",
+        },
+        (payload) => {
+          const row = payload.new;
+
+          if (!row) return;
+
+          setScores((previousScores) => ({
+            ...previousScores,
+            [row.round_id]: {
+              ...(previousScores[row.round_id] || {}),
+              [row.player]: {
+                ...((previousScores[row.round_id] || {})[row.player] || {}),
+                [row.hole]: row.score === null ? "" : String(row.score),
+              },
+            },
+          }));
+        }
+      )
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          setConnectionStatus("Live");
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   function getScore(roundId, player, holeNumber) {
     return scores?.[roundId]?.[player]?.[holeNumber] || "";
   }
 
-  function updateScore(roundId, player, holeNumber, value) {
+  async function updateScore(roundId, player, holeNumber, value) {
     setScores((previousScores) => ({
       ...previousScores,
       [roundId]: {
@@ -108,13 +180,46 @@ function App() {
         },
       },
     }));
+
+    const cleanScore = value === "" ? null : Number(value);
+
+    const { error } = await supabase.from("golf_scores").upsert(
+      {
+        round_id: roundId,
+        player,
+        hole: holeNumber,
+        score: cleanScore,
+        updated_at: new Date().toISOString(),
+      },
+      {
+        onConflict: "round_id,player,hole",
+      }
+    );
+
+    if (error) {
+      console.error("Error saving score:", error);
+      setConnectionStatus("Save Error");
+    } else {
+      setConnectionStatus("Live");
+    }
   }
 
   function hasScore(roundId, player, holeNumber) {
     return getScore(roundId, player, holeNumber) !== "";
   }
 
-  function resetRound(roundId) {
+  async function resetRound(roundId) {
+    const { error } = await supabase
+      .from("golf_scores")
+      .update({ score: null, updated_at: new Date().toISOString() })
+      .eq("round_id", roundId);
+
+    if (error) {
+      console.error("Error resetting round:", error);
+      setConnectionStatus("Save Error");
+      return;
+    }
+
     setScores((previousScores) => ({
       ...previousScores,
       [roundId]: {},
@@ -598,6 +703,10 @@ function App() {
           </div>
         </header>
 
+        <div className={`live-status ${connectionStatus === "Live" ? "is-live" : ""}`}>
+          {connectionStatus === "Live" ? "● Live Sync On" : `● ${connectionStatus}`}
+        </div>
+
         {!selectedMatchup && (
           <nav className="nav-tabs">
             <button
@@ -659,10 +768,8 @@ function App() {
             const frontPoints = awardLivePoint(round.front);
             const backPoints = awardLivePoint(round.back);
             const fullPoints = awardLivePoint(round.full);
-            const team1 =
-              frontPoints[0] + backPoints[0] + fullPoints[0];
-            const team2 =
-              frontPoints[1] + backPoints[1] + fullPoints[1];
+            const team1 = frontPoints[0] + backPoints[0] + fullPoints[0];
+            const team2 = frontPoints[1] + backPoints[1] + fullPoints[1];
 
             return (
               <button
