@@ -2,14 +2,14 @@ import React, { useMemo, useState } from "react";
 import "./App.css";
 
 const defaultPlayers = [
-  "Player 1",
-  "Player 2",
-  "Player 3",
-  "Player 4",
-  "Player 5",
-  "Player 6",
-  "Player 7",
-  "Player 8",
+  "Al Brown",
+  "Charles Mayer",
+  "Mike Luddy",
+  "Mike Paladino",
+  "Kevin Gilmore",
+  "Jason Spendley",
+  "Brian Riordan",
+  "Pat",
 ];
 
 const courses = {
@@ -58,6 +58,16 @@ function getStablefordPoints(score, par) {
   return 0;
 }
 
+function awardPoint(teamOneScore, teamTwoScore, higherIsBetter = true) {
+  if (teamOneScore === teamTwoScore) return [0.5, 0.5];
+
+  if (higherIsBetter) {
+    return teamOneScore > teamTwoScore ? [1, 0] : [0, 1];
+  }
+
+  return teamOneScore < teamTwoScore ? [1, 0] : [0, 1];
+}
+
 function App() {
   const [players, setPlayers] = useState(defaultPlayers);
   const [activeRoundId, setActiveRoundId] = useState(1);
@@ -66,22 +76,20 @@ function App() {
 
   const [teams, setTeams] = useState({
     1: [
-      ["Player 1", "Player 2"],
-      ["Player 3", "Player 4"],
-      ["Player 5", "Player 6"],
-      ["Player 7", "Player 8"],
+      ["Al Brown", "Charles Mayer", "Mike Luddy", "Mike Paladino"],
+      ["Kevin Gilmore", "Jason Spendley", "Brian Riordan", "Pat"],
     ],
     2: [
-      ["Player 1", "Player 2"],
-      ["Player 3", "Player 4"],
-      ["Player 5", "Player 6"],
-      ["Player 7", "Player 8"],
+      ["Al Brown", "Charles Mayer"],
+      ["Mike Luddy", "Mike Paladino"],
+      ["Kevin Gilmore", "Jason Spendley"],
+      ["Brian Riordan", "Pat"],
     ],
     3: [
-      ["Player 1", "Player 2"],
-      ["Player 3", "Player 4"],
-      ["Player 5", "Player 6"],
-      ["Player 7", "Player 8"],
+      ["Al Brown", "Kevin Gilmore"],
+      ["Charles Mayer", "Jason Spendley"],
+      ["Mike Luddy", "Brian Riordan"],
+      ["Mike Paladino", "Pat"],
     ],
   });
 
@@ -147,6 +155,165 @@ function App() {
     }));
   }
 
+  function getStablefordTeamTotal(team, holeStart, holeEnd) {
+    const roundScores = scores[1] || {};
+    const jackFrostPar = courses.jackFrost.par;
+    let total = 0;
+
+    for (let holeNumber = holeStart; holeNumber <= holeEnd; holeNumber++) {
+      const par = jackFrostPar[holeNumber - 1];
+
+      const bestHolePoints = Math.max(
+        ...team.map((player) =>
+          getStablefordPoints(roundScores?.[player]?.[holeNumber], par)
+        )
+      );
+
+      total += bestHolePoints;
+    }
+
+    return total;
+  }
+
+  function getScrambleSideTotal(sideNumber, holeStart, holeEnd) {
+    const roundScores = scores[2] || {};
+    const scrambleTeams = teams[2];
+
+    const sidePairs =
+      sideNumber === 1
+        ? [scrambleTeams[0], scrambleTeams[1]]
+        : [scrambleTeams[2], scrambleTeams[3]];
+
+    let total = 0;
+
+    sidePairs.forEach((pair) => {
+      const scoringPlayer = pair[0];
+
+      for (let holeNumber = holeStart; holeNumber <= holeEnd; holeNumber++) {
+        total += Number(roundScores?.[scoringPlayer]?.[holeNumber] || 0);
+      }
+    });
+
+    return total;
+  }
+
+  function getSinglesSideTotal(sideNumber, holeStart, holeEnd) {
+    const roundScores = scores[3] || {};
+    const matches = teams[3];
+    let total = 0;
+
+    matches.forEach((match) => {
+      const playerA = match[0];
+      const playerB = match[1];
+
+      for (let holeNumber = holeStart; holeNumber <= holeEnd; holeNumber++) {
+        const scoreA = Number(roundScores?.[playerA]?.[holeNumber]);
+        const scoreB = Number(roundScores?.[playerB]?.[holeNumber]);
+
+        if (scoreA && scoreB) {
+          if (scoreA < scoreB && sideNumber === 1) total += 1;
+          if (scoreB < scoreA && sideNumber === 2) total += 1;
+        }
+      }
+    });
+
+    return total;
+  }
+
+  const overallLeaderboard = useMemo(() => {
+    const weekendTeamOne = teams[1][0];
+    const weekendTeamTwo = teams[1][1];
+
+    let teamOnePoints = 0;
+    let teamTwoPoints = 0;
+
+    const roundBreakdown = [];
+
+    // Round 1: Stableford
+    const stablefordTeamOneFront = getStablefordTeamTotal(weekendTeamOne, 1, 9);
+    const stablefordTeamTwoFront = getStablefordTeamTotal(weekendTeamTwo, 1, 9);
+    const stablefordTeamOneBack = getStablefordTeamTotal(weekendTeamOne, 10, 18);
+    const stablefordTeamTwoBack = getStablefordTeamTotal(weekendTeamTwo, 10, 18);
+    const stablefordTeamOneFull = getStablefordTeamTotal(weekendTeamOne, 1, 18);
+    const stablefordTeamTwoFull = getStablefordTeamTotal(weekendTeamTwo, 1, 18);
+
+    [
+      awardPoint(stablefordTeamOneFront, stablefordTeamTwoFront, true),
+      awardPoint(stablefordTeamOneBack, stablefordTeamTwoBack, true),
+      awardPoint(stablefordTeamOneFull, stablefordTeamTwoFull, true),
+    ].forEach(([one, two]) => {
+      teamOnePoints += one;
+      teamTwoPoints += two;
+    });
+
+    roundBreakdown.push({
+      round: "Stableford",
+      teamOne: `${stablefordTeamOneFront}/${stablefordTeamOneBack}/${stablefordTeamOneFull}`,
+      teamTwo: `${stablefordTeamTwoFront}/${stablefordTeamTwoBack}/${stablefordTeamTwoFull}`,
+    });
+
+    // Round 2: Scramble
+    const scrambleTeamOneFront = getScrambleSideTotal(1, 1, 9);
+    const scrambleTeamTwoFront = getScrambleSideTotal(2, 1, 9);
+    const scrambleTeamOneBack = getScrambleSideTotal(1, 10, 18);
+    const scrambleTeamTwoBack = getScrambleSideTotal(2, 10, 18);
+    const scrambleTeamOneFull = getScrambleSideTotal(1, 1, 18);
+    const scrambleTeamTwoFull = getScrambleSideTotal(2, 1, 18);
+
+    [
+      awardPoint(scrambleTeamOneFront, scrambleTeamTwoFront, false),
+      awardPoint(scrambleTeamOneBack, scrambleTeamTwoBack, false),
+      awardPoint(scrambleTeamOneFull, scrambleTeamTwoFull, false),
+    ].forEach(([one, two]) => {
+      teamOnePoints += one;
+      teamTwoPoints += two;
+    });
+
+    roundBreakdown.push({
+      round: "Scramble",
+      teamOne: `${scrambleTeamOneFront}/${scrambleTeamOneBack}/${scrambleTeamOneFull}`,
+      teamTwo: `${scrambleTeamTwoFront}/${scrambleTeamTwoBack}/${scrambleTeamTwoFull}`,
+    });
+
+    // Round 3: Singles
+    const singlesTeamOneFront = getSinglesSideTotal(1, 1, 9);
+    const singlesTeamTwoFront = getSinglesSideTotal(2, 1, 9);
+    const singlesTeamOneBack = getSinglesSideTotal(1, 10, 18);
+    const singlesTeamTwoBack = getSinglesSideTotal(2, 10, 18);
+    const singlesTeamOneFull = getSinglesSideTotal(1, 1, 18);
+    const singlesTeamTwoFull = getSinglesSideTotal(2, 1, 18);
+
+    [
+      awardPoint(singlesTeamOneFront, singlesTeamTwoFront, true),
+      awardPoint(singlesTeamOneBack, singlesTeamTwoBack, true),
+      awardPoint(singlesTeamOneFull, singlesTeamTwoFull, true),
+    ].forEach(([one, two]) => {
+      teamOnePoints += one;
+      teamTwoPoints += two;
+    });
+
+    roundBreakdown.push({
+      round: "Singles",
+      teamOne: `${singlesTeamOneFront}/${singlesTeamOneBack}/${singlesTeamOneFull}`,
+      teamTwo: `${singlesTeamTwoFront}/${singlesTeamTwoBack}/${singlesTeamTwoFull}`,
+    });
+
+    return [
+      {
+        name: "Team 1",
+        players: weekendTeamOne.join(" / "),
+        points: teamOnePoints,
+        breakdown: roundBreakdown.map((item) => `${item.round}: ${item.teamOne}`),
+      },
+      {
+        name: "Team 2",
+        players: weekendTeamTwo.join(" / "),
+        points: teamTwoPoints,
+        breakdown: roundBreakdown.map((item) => `${item.round}: ${item.teamTwo}`),
+      },
+    ].sort((a, b) => b.points - a.points);
+  }, [scores, teams]);
+
   const leaderboard = useMemo(() => {
     const roundScores = scores[activeRoundId] || {};
     const currentTeams = teams[activeRoundId] || [];
@@ -170,7 +337,7 @@ function App() {
             name: `Team ${index + 1}`,
             players: team.join(" / "),
             score: totalPoints,
-            label: "points",
+            label: "Stableford pts",
           };
         })
         .sort((a, b) => b.score - a.score);
@@ -244,7 +411,8 @@ function App() {
         <p className="eyebrow">Golf Trip Scoreboard</p>
         <h1>Covid Classic</h1>
         <p className="subtitle">
-          Track Best Ball Stableford, 2-Man Scramble, and Singles Matches.
+          Track Best Ball Stableford, 2-Man Scramble, Singles Matches, and the
+          overall weekend leaderboard.
         </p>
       </header>
 
@@ -390,7 +558,38 @@ function App() {
 
         <aside className="side-panel">
           <section className="card">
-            <h2>Leaderboard</h2>
+            <h2>Overall Leaderboard</h2>
+            <p className="small-note">
+              Each round: Front 9, Back 9, and Full Round are worth 1 point each.
+            </p>
+
+            <div className="leaderboard">
+              {overallLeaderboard.map((team, index) => (
+                <div className="leaderboard-row" key={team.name}>
+                  <div>
+                    <strong>
+                      #{index + 1} {team.name}
+                    </strong>
+                    <p>{team.players}</p>
+
+                    {team.breakdown.map((line) => (
+                      <p className="overall-breakdown" key={line}>
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+
+                  <div className="leader-score">
+                    <strong>{team.points}</strong>
+                    <span>pts</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="card">
+            <h2>Round Leaderboard</h2>
 
             <div className="leaderboard">
               {leaderboard.map((item, index) => (
@@ -454,7 +653,7 @@ function App() {
         <div className="section-header">
           <div>
             <h2>Players</h2>
-            <p>Edit these once you have the final 8 guys.</p>
+            <p>Edit names here if anything changes.</p>
           </div>
         </div>
 
