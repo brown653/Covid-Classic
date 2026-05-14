@@ -104,11 +104,11 @@ function App() {
     async function loadScores() {
       const { data, error } = await supabase.from("golf_scores").select("*");
 
-      if (error) {
-        console.error("Error loading scores:", error);
-        setConnectionStatus("Offline");
-        return;
-      }
+    if (error) {
+  console.error("Error loading scores:", error);
+  setConnectionStatus(`Offline: ${error.message}`);
+  return;
+}
 
       const loadedScores = {};
 
