@@ -572,3 +572,198 @@ button { cursor: pointer; }
   .entry-layout { grid-template-columns: 1fr; }
   .rc-team-footer { grid-template-columns: 1fr; }
 }
+/* Mobile scorecard cleanup + non-winning team grey */
+
+/* Make the non-leading side feel intentional instead of plain white */
+.rc-match-side,
+.detail-side {
+  background: #eef1f5 !important;
+  color: #071529 !important;
+}
+
+.rc-match-card.leader-team1 .rc-side-red,
+.detail-hero.leader-team1 .detail-side-red {
+  background: var(--rc-red) !important;
+  color: #fff !important;
+}
+
+.rc-match-card.leader-team2 .rc-side-blue,
+.detail-hero.leader-team2 .detail-side-blue {
+  background: var(--rc-blue) !important;
+  color: #fff !important;
+}
+
+.rc-match-center,
+.detail-center {
+  background: #f7f9fc !important;
+}
+
+/* Slightly cleaner font weights */
+.rc-brand,
+.rc-match-side h3,
+.detail-side h2,
+.detail-center > strong,
+.rc-match-center strong,
+.scorecard,
+.scorecard input {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+}
+
+.detail-side h2,
+.rc-match-side h3 {
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+}
+
+/* Scorecard should scroll inside the card, not blow out/crop the phone screen */
+.scorecard-shell,
+.scorecard-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scorecard {
+  table-layout: fixed !important;
+  min-width: 1180px !important;
+}
+
+.scorecard th,
+.scorecard td {
+  min-width: 58px !important;
+  padding: 8px 6px !important;
+  white-space: nowrap !important;
+}
+
+.scorecard-name {
+  min-width: 165px !important;
+  width: 165px !important;
+  max-width: 165px !important;
+  white-space: normal !important;
+  line-height: 1.15 !important;
+}
+
+.scorecard input {
+  width: 48px !important;
+  height: 38px !important;
+  border-radius: 9px !important;
+  font-size: 15px !important;
+}
+
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .app,
+  .rc-page {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+    overflow-x: hidden !important;
+  }
+
+  .detail-actions,
+  .detail-hero,
+  .scorecard-shell {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .detail-hero {
+    overflow: hidden !important;
+  }
+
+  .detail-side {
+    min-height: 118px !important;
+  }
+
+  .detail-side:not(.detail-side-blue),
+  .detail-side-blue {
+    background: #eef1f5 !important;
+  }
+
+  .detail-hero.leader-team1 .detail-side-red {
+    background: var(--rc-red) !important;
+    color: #fff !important;
+  }
+
+  .detail-hero.leader-team2 .detail-side-blue {
+    background: var(--rc-blue) !important;
+    color: #fff !important;
+  }
+
+  .detail-side h2 {
+    font-size: 26px !important;
+    line-height: 1.12 !important;
+  }
+
+  .detail-center > strong {
+    font-size: 29px !important;
+  }
+
+  .scorecard-shell {
+    display: block !important;
+    border-radius: 0 0 12px 12px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+  }
+
+  .scorecard-wrap {
+    display: block !important;
+    overflow-x: auto !important;
+  }
+
+  .scorecard {
+    min-width: 1120px !important;
+    font-size: 13px !important;
+  }
+
+  .scorecard th,
+  .scorecard td {
+    min-width: 54px !important;
+    padding: 7px 5px !important;
+  }
+
+  .scorecard-name {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 5 !important;
+    min-width: 140px !important;
+    width: 140px !important;
+    max-width: 140px !important;
+    background: #f8fafc !important;
+    box-shadow: 2px 0 0 #dbe1e8 !important;
+  }
+
+  .scorecard th.scorecard-name,
+  .scorecard thead .scorecard-name {
+    background: var(--rc-blue-dark) !important;
+    color: #fff !important;
+    z-index: 8 !important;
+  }
+
+  .divider .scorecard-name,
+  .divider td:first-child {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 7 !important;
+  }
+
+  .result-row .scorecard-name {
+    background: var(--rc-blue-dark) !important;
+    color: #fff !important;
+    z-index: 7 !important;
+  }
+
+  .scorecard input {
+    width: 45px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+}
