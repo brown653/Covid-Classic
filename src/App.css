@@ -1971,3 +1971,100 @@ body {
     line-height: 1 !important;
   }
 }
+/* Bigger + centered avatar cards in matchup side panels */
+
+.match-side,
+.match-left,
+.match-right,
+.team-side,
+.player-side {
+  position: relative;
+}
+
+/* Center the avatar group inside each team panel */
+.avatar-row,
+.player-avatar-row,
+.avatar-group,
+.player-group {
+  width: 100%;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: flex-start !important;
+  gap: 22px !important;
+  margin-top: 14px !important;
+  flex-wrap: nowrap !important;
+}
+
+/* Each player avatar block */
+.avatar-card,
+.player-avatar,
+.player-chip {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 74px !important;
+  text-align: center !important;
+}
+
+/* Make the circles bigger */
+.avatar-circle,
+.player-avatar-circle,
+.player-headshot {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  border-radius: 999px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+}
+
+/* Small name under avatar */
+.avatar-name,
+.player-avatar-name,
+.player-first-name {
+  margin-top: 6px !important;
+  font-size: 13px !important;
+  line-height: 1.1 !important;
+  font-weight: 700 !important;
+  text-align: center !important;
+  white-space: nowrap !important;
+}
+
+/* Mobile tuning */
+@media (max-width: 700px) {
+  .avatar-row,
+  .player-avatar-row,
+  .avatar-group,
+  .player-group {
+    gap: 16px !important;
+    margin-top: 10px !important;
+  }
+
+  .avatar-card,
+  .player-avatar,
+  .player-chip {
+    min-width: 62px !important;
+  }
+
+  .avatar-circle,
+  .player-avatar-circle,
+  .player-headshot {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    font-size: 17px !important;
+  }
+
+  .avatar-name,
+  .player-avatar-name,
+  .player-first-name {
+    font-size: 12px !important;
+  }
+}
