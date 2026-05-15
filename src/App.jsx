@@ -874,6 +874,8 @@ function App() {
       0,
       Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
     );
+    const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
+    const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
 
     return (
       <div className="rc-page">
@@ -888,8 +890,8 @@ function App() {
           <div className="rc-score-meta">
             <div className="rc-team-meta rc-team-one">
               <span>Team 1</span>
-              <strong>{formatPoints(weekendScore.team1)}</strong>
-              <small>to win</small>
+              <strong>{formatPoints(team1Needed)}</strong>
+              <small>more to win</small>
             </div>
 
             <div className="rc-race-meta">
@@ -898,8 +900,8 @@ function App() {
             </div>
 
             <div className="rc-team-meta rc-team-two">
-              <small>to win</small>
-              <strong>{formatPoints(weekendScore.team2)}</strong>
+              <small>more to win</small>
+              <strong>{formatPoints(team2Needed)}</strong>
               <span>Team 2</span>
             </div>
           </div>
