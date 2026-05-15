@@ -1415,3 +1415,173 @@ table {
     margin-top: 2px !important;
   }
 }
+
+/* FINAL FONT + TOP SCORE CLEANUP */
+:root {
+  --font-clean: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body,
+button,
+input,
+select,
+table {
+  font-family: var(--font-clean) !important;
+  -webkit-font-smoothing: antialiased !important;
+  text-rendering: optimizeLegibility !important;
+}
+
+.rc-brand {
+  font-weight: 700 !important;
+  letter-spacing: .22em !important;
+}
+
+.rc-team-meta {
+  gap: 7px !important;
+  font-weight: 600 !important;
+}
+
+.rc-team-meta span {
+  font-weight: 650 !important;
+}
+
+.rc-team-meta strong {
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.rc-team-meta small {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  letter-spacing: -.01em !important;
+  white-space: nowrap !important;
+}
+
+.rc-race-meta strong {
+  font-weight: 700 !important;
+  letter-spacing: -.02em !important;
+}
+
+.rc-race-meta span {
+  font-weight: 600 !important;
+}
+
+.rc-nav button,
+.rc-session-tab {
+  font-weight: 650 !important;
+  letter-spacing: -.01em !important;
+}
+
+.rc-section-head p,
+.detail-center p,
+.detail-side p {
+  font-weight: 650 !important;
+  letter-spacing: .18em !important;
+}
+
+.rc-section-head h2,
+.rc-round-mini h3,
+.entry-picker h2,
+.phone-card-head h2,
+.group-head h3 {
+  font-weight: 650 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.rc-match-side h3,
+.detail-side h2 {
+  font-weight: 650 !important;
+  letter-spacing: -0.035em !important;
+}
+
+.rc-match-center strong,
+.detail-center > strong {
+  font-weight: 700 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.rc-points-row span,
+.detail-score-boxes span {
+  font-weight: 650 !important;
+  letter-spacing: .08em !important;
+}
+
+.scorecard th,
+.scorecard td,
+.scorecard-name,
+.score-total,
+.score-input {
+  font-family: var(--font-clean) !important;
+  font-weight: 600 !important;
+}
+
+.score-input {
+  font-weight: 650 !important;
+}
+
+@media (max-width: 700px) {
+  .rc-brand {
+    font-size: 14px !important;
+    letter-spacing: .24em !important;
+    font-weight: 700 !important;
+  }
+
+  .rc-team-meta {
+    gap: 5px !important;
+  }
+
+  .rc-team-meta strong {
+    font-size: 26px !important;
+    font-weight: 700 !important;
+  }
+
+  .rc-team-meta small {
+    font-size: 11px !important;
+    line-height: 1 !important;
+  }
+
+  .rc-race-meta strong {
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  .rc-race-meta span {
+    font-size: 11px !important;
+  }
+
+  .rc-score-meta {
+    gap: 8px !important;
+  }
+
+  .rc-match-side h3 {
+    font-size: clamp(13px, 3.8vw, 15px) !important;
+    line-height: 1.08 !important;
+    font-weight: 650 !important;
+  }
+
+  .rc-match-center strong {
+    font-size: clamp(20px, 5.8vw, 24px) !important;
+    line-height: .98 !important;
+    font-weight: 700 !important;
+  }
+
+  .rc-match-center p {
+    font-size: 11px !important;
+    font-weight: 650 !important;
+  }
+
+  .detail-side h2 {
+    font-size: clamp(14px, 4.2vw, 17px) !important;
+    font-weight: 650 !important;
+  }
+
+  .detail-center > strong {
+    font-size: clamp(19px, 5.8vw, 24px) !important;
+    font-weight: 700 !important;
+  }
+
+  .scorecard th,
+  .scorecard td {
+    font-weight: 600 !important;
+  }
+}
