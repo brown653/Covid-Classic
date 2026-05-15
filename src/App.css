@@ -968,3 +968,247 @@ button { cursor: pointer; }
     overflow-x: auto !important;
   }
 }
+/* Mobile matchup readability upgrade */
+@media (max-width: 700px) {
+  .app {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .current-round-title,
+  .section-title,
+  .round-title {
+    margin-left: 2px !important;
+    margin-right: 2px !important;
+  }
+
+  .live-match-card,
+  .match-card,
+  .ryder-match-card,
+  .matchup-card {
+    overflow: hidden !important;
+    border-radius: 18px !important;
+    margin: 12px 0 18px !important;
+    box-shadow: 0 12px 26px rgba(2, 18, 35, 0.18) !important;
+    background: #ffffff !important;
+  }
+
+  /* Make each matchup read as: Team 1 / VS / Team 2 */
+  .match-top,
+  .match-card-top,
+  .ryder-match-top,
+  .matchup-top,
+  .match-header-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0 !important;
+    background: #ffffff !important;
+  }
+
+  .match-side,
+  .match-team,
+  .team-side,
+  .side-card,
+  .left-side,
+  .right-side {
+    min-height: unset !important;
+    width: 100% !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    clip-path: none !important;
+    transform: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* Default non-winner side has body, not plain white */
+  .match-side:not(.is-leading),
+  .match-team:not(.is-leading),
+  .team-side:not(.is-leading),
+  .side-card:not(.is-leading),
+  .left-side:not(.is-leading),
+  .right-side:not(.is-leading) {
+    background: linear-gradient(180deg, #f3f5f8, #e8edf3) !important;
+    color: #071b33 !important;
+  }
+
+  /* Winner blocks */
+  .match-side.is-team-1.is-leading,
+  .match-team.is-team-1.is-leading,
+  .team-side.is-team-1.is-leading,
+  .side-card.is-team-1.is-leading,
+  .left-side.is-leading {
+    background: linear-gradient(135deg, #d20a1e, #a90818) !important;
+    color: #ffffff !important;
+  }
+
+  .match-side.is-team-2.is-leading,
+  .match-team.is-team-2.is-leading,
+  .team-side.is-team-2.is-leading,
+  .side-card.is-team-2.is-leading,
+  .right-side.is-leading {
+    background: linear-gradient(135deg, #004f9f, #003a78) !important;
+    color: #ffffff !important;
+  }
+
+  .match-side h3,
+  .match-team h3,
+  .team-side h3,
+  .side-card h3,
+  .left-side h3,
+  .right-side h3,
+  .match-side strong,
+  .match-team strong,
+  .team-side strong,
+  .side-card strong,
+  .left-side strong,
+  .right-side strong {
+    font-size: 17px !important;
+    line-height: 1.25 !important;
+    font-weight: 800 !important;
+    letter-spacing: -0.2px !important;
+    color: inherit !important;
+  }
+
+  .team-pill,
+  .team-badge,
+  .side-badge,
+  .match-team-badge {
+    flex: 0 0 auto !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 50% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 800 !important;
+    font-size: 12px !important;
+    border: 2px solid currentColor !important;
+    opacity: 0.95 !important;
+  }
+
+  /* Center score becomes a clear VS band between teams */
+  .match-center,
+  .match-score-center,
+  .center-score,
+  .score-center {
+    order: 2 !important;
+    width: 100% !important;
+    padding: 12px 14px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #d9e0e8 !important;
+    border-bottom: 1px solid #d9e0e8 !important;
+    text-align: center !important;
+  }
+
+  .match-center::before,
+  .match-score-center::before,
+  .center-score::before,
+  .score-center::before {
+    content: "MATCHUP";
+    display: block;
+    font-size: 10px;
+    letter-spacing: 1.8px;
+    color: #7b8794;
+    font-weight: 800;
+    margin-bottom: 3px;
+  }
+
+  .match-center h3,
+  .match-score-center h3,
+  .center-score h3,
+  .score-center h3,
+  .match-center strong,
+  .match-score-center strong,
+  .center-score strong,
+  .score-center strong {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+    font-weight: 850 !important;
+    letter-spacing: -0.4px !important;
+    margin: 0 !important;
+  }
+
+  .match-center span,
+  .match-score-center span,
+  .center-score span,
+  .score-center span {
+    font-size: 11px !important;
+    color: #6c7683 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Hole dots scroll neatly instead of squeezing */
+  .hole-dots,
+  .match-holes,
+  .holes-row,
+  .hole-status-row {
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    display: flex !important;
+    gap: 8px !important;
+    padding: 10px 12px 12px !important;
+    background: #f7f9fb !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .hole-dots span,
+  .match-holes span,
+  .holes-row span,
+  .hole-status-row span {
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    border-radius: 50% !important;
+    font-size: 11px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-weight: 800 !important;
+  }
+
+  /* Match scorecard table: scroll, do not compress */
+  .scorecard-shell,
+  .scorecard-wrap,
+  .scorecard-container,
+  .table-wrap {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    width: 100% !important;
+  }
+
+  .scorecard,
+  table.scorecard {
+    min-width: 1120px !important;
+    table-layout: fixed !important;
+  }
+
+  .scorecard th,
+  .scorecard td {
+    min-width: 52px !important;
+    width: 52px !important;
+    padding: 8px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  .scorecard .scorecard-name,
+  .scorecard th:first-child,
+  .scorecard td:first-child {
+    min-width: 150px !important;
+    width: 150px !important;
+    position: static !important;
+    left: auto !important;
+    z-index: auto !important;
+  }
+
+  .scorecard input {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 36px !important;
+    padding: 4px !important;
+    font-size: 15px !important;
+  }
+}
