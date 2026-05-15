@@ -1063,3 +1063,316 @@ button { cursor: pointer; }
     letter-spacing: .12em !important;
   }
 }
+/* Mobile Ryder card fit + spacing cleanup
+   Paste at the very bottom of src/App.css
+   Goal: keep Ryder-style look but fit each matchup cleanly on phone.
+*/
+
+@media (max-width: 700px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .app {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Give the top scoreboard a little breathing room on phone */
+  .topbar,
+  .hero,
+  .score-header,
+  .scoreboard-header {
+    max-width: 100% !important;
+  }
+
+  /* Round tabs scroll instead of squeezing/cutting off */
+  .round-tabs,
+  .session-tabs,
+  .sub-tabs {
+    display: flex !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 0 !important;
+    white-space: nowrap !important;
+    scrollbar-width: none !important;
+  }
+
+  .round-tabs::-webkit-scrollbar,
+  .session-tabs::-webkit-scrollbar,
+  .sub-tabs::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .round-tabs button,
+  .session-tabs button,
+  .sub-tabs button {
+    flex: 0 0 auto !important;
+    min-width: 185px !important;
+    padding: 13px 16px !important;
+    font-size: 14px !important;
+  }
+
+  .current-round-section {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .current-round-title,
+  .section-title,
+  .round-title {
+    padding: 0 2px !important;
+  }
+
+  .current-round-title h2,
+  .section-title h2,
+  .round-title h2 {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.04em !important;
+  }
+
+  /* Key fix: make each match card fit the phone width */
+  .match-card,
+  .ryder-match-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    display: grid !important;
+    grid-template-columns: 37% 26% 37% !important;
+    border-radius: 10px !important;
+    overflow: hidden !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.14) !important;
+    margin: 0 0 18px !important;
+  }
+
+  /* Sides */
+  .match-left,
+  .match-right {
+    min-width: 0 !important;
+    min-height: 130px !important;
+    padding: 14px 10px !important;
+    gap: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Losing side should have body, not plain white */
+  .match-left:not(.winner),
+  .match-right:not(.winner) {
+    background: linear-gradient(180deg, #eef1f4 0%, #e3e7eb 100%) !important;
+    color: #081a2f !important;
+  }
+
+  /* Winning blocks */
+  .match-left.winner,
+  .team-one-winning .match-left {
+    background: #c8102e !important;
+    color: white !important;
+  }
+
+  .match-right.winner,
+  .team-two-winning .match-right {
+    background: #004b93 !important;
+    color: white !important;
+  }
+
+  /* Tone down the diagonal so it fits better on phone */
+  .match-left.winner::after,
+  .team-one-winning .match-left::after,
+  .match-right.winner::before,
+  .team-two-winning .match-right::before {
+    display: none !important;
+  }
+
+  .team-pill,
+  .team-badge,
+  .side-badge {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    font-size: 12px !important;
+    border-width: 2px !important;
+  }
+
+  .match-player-name,
+  .side-name,
+  .team-names {
+    font-size: 16px !important;
+    line-height: 1.12 !important;
+    letter-spacing: -0.02em !important;
+    max-width: 100% !important;
+    word-break: normal !important;
+    overflow-wrap: anywhere !important;
+    text-align: center !important;
+  }
+
+  .match-left .match-player-name,
+  .match-left .side-name,
+  .match-left .team-names {
+    text-align: left !important;
+  }
+
+  .match-right .match-player-name,
+  .match-right .side-name,
+  .match-right .team-names {
+    text-align: right !important;
+  }
+
+  /* Center score */
+  .match-center {
+    min-width: 0 !important;
+    min-height: 130px !important;
+    padding: 10px 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-direction: column !important;
+    background: #ffffff !important;
+    box-sizing: border-box !important;
+  }
+
+  .match-number,
+  .match-meta {
+    font-size: 12px !important;
+    line-height: 1.1 !important;
+  }
+
+  .match-status-main,
+  .match-lead,
+  .match-score-main {
+    font-size: 22px !important;
+    line-height: 0.95 !important;
+    letter-spacing: -0.04em !important;
+    margin: 3px 0 8px !important;
+    text-align: center !important;
+  }
+
+  .segment-pills,
+  .match-pills,
+  .score-pills {
+    display: grid !important;
+    gap: 4px !important;
+    justify-items: center !important;
+  }
+
+  .segment-pills span,
+  .match-pills span,
+  .score-pills span,
+  .segment-pill,
+  .score-pill {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+    border-radius: 999px !important;
+    white-space: nowrap !important;
+  }
+
+  /* Hole dots fit better; no weird wrapping */
+  .hole-dots,
+  .match-holes,
+  .dots-row {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 12px 10px !important;
+    background: #f3f4f6 !important;
+    justify-content: flex-start !important;
+    scrollbar-width: none !important;
+  }
+
+  .hole-dots::-webkit-scrollbar,
+  .match-holes::-webkit-scrollbar,
+  .dots-row::-webkit-scrollbar {
+    display: none !important;
+  }
+
+  .hole-dot,
+  .match-hole-dot,
+  .dots-row span {
+    flex: 0 0 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    min-width: 22px !important;
+    font-size: 11px !important;
+    line-height: 22px !important;
+  }
+
+  /* Match detail scorecard: scroll horizontally like a real table */
+  .scorecard-shell,
+  .scorecard-scroll,
+  .scorecard-container {
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  table.scorecard,
+  .scorecard {
+    min-width: 980px !important;
+    width: 980px !important;
+    table-layout: fixed !important;
+  }
+
+  .scorecard th,
+  .scorecard td {
+    min-width: 42px !important;
+    width: 42px !important;
+    padding: 8px 5px !important;
+    font-size: 12px !important;
+  }
+
+  .scorecard th:first-child,
+  .scorecard td:first-child,
+  .scorecard-name {
+    min-width: 150px !important;
+    width: 150px !important;
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 4 !important;
+    background: #f7f8fa !important;
+    box-shadow: 1px 0 0 rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .scorecard input {
+    width: 36px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+    padding: 2px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .match-card,
+  .ryder-match-card {
+    grid-template-columns: 36% 28% 36% !important;
+  }
+
+  .match-player-name,
+  .side-name,
+  .team-names {
+    font-size: 14px !important;
+  }
+
+  .match-status-main,
+  .match-lead,
+  .match-score-main {
+    font-size: 20px !important;
+  }
+
+  .team-pill,
+  .team-badge,
+  .side-badge {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    font-size: 11px !important;
+  }
+}
