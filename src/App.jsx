@@ -932,7 +932,7 @@ function App() {
     const holesPlayed = getMatchupSegment(matchup, 1, 18).holesCounted;
 
     return (
-      <button className="rc-match-card" onClick={() => setSelectedMatchupId(matchup.id)}>
+      <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
           <div className="rc-player-dot">T1</div>
           <h3>{matchup.sideAPlayers.join(" / ")}</h3>
@@ -1292,6 +1292,7 @@ function App() {
     const round = rounds.find((item) => item.id === matchup.roundId);
     const course = courses[round.courseKey];
     const summary = getMatchupSummary(matchup);
+    const detailLeader = getMatchLeader(matchup);
 
     const outPar = course.par.slice(0, 9).reduce((sum, par) => sum + par, 0);
     const inPar = course.par.slice(9, 18).reduce((sum, par) => sum + par, 0);
@@ -1303,26 +1304,40 @@ function App() {
           <button onClick={() => resetRound(matchup.roundId)}>Reset Round</button>
         </div>
 
-        <section className="detail-hero">
-          <div>
-            <p>{round.name} · {round.format}</p>
-            <h2>{matchup.title}</h2>
-            <span>{summary.status}</span>
+        <section className={`detail-hero leader-${detailLeader}`}>
+          <div className="detail-side detail-side-red">
+            <div className="detail-team-badge">T1</div>
+            <div>
+              <p>{matchup.sideAName}</p>
+              <h2>{matchup.sideAPlayers.join(" / ")}</h2>
+            </div>
           </div>
 
-          <div className="detail-score-boxes">
-            <div>
-              <span>Front</span>
-              <strong>{summary.front.teamAScore}-{summary.front.teamBScore}</strong>
+          <div className={`detail-center ${detailLeader === "team1" ? "red-leader" : detailLeader === "team2" ? "blue-leader" : "tie-leader"}`}>
+            <p>{round.name} · {round.format}</p>
+            <strong>{summary.status}</strong>
+            <div className="detail-score-boxes">
+              <div>
+                <span>Front</span>
+                <b>{summary.front.teamAScore}-{summary.front.teamBScore}</b>
+              </div>
+              <div>
+                <span>Back</span>
+                <b>{summary.back.teamAScore}-{summary.back.teamBScore}</b>
+              </div>
+              <div>
+                <span>Total</span>
+                <b>{summary.full.teamAScore}-{summary.full.teamBScore}</b>
+              </div>
             </div>
+          </div>
+
+          <div className="detail-side detail-side-blue">
             <div>
-              <span>Back</span>
-              <strong>{summary.back.teamAScore}-{summary.back.teamBScore}</strong>
+              <p>{matchup.sideBName}</p>
+              <h2>{matchup.sideBPlayers.join(" / ")}</h2>
             </div>
-            <div>
-              <span>Total</span>
-              <strong>{summary.full.teamAScore}-{summary.full.teamBScore}</strong>
-            </div>
+            <div className="detail-team-badge">T2</div>
           </div>
         </section>
 
