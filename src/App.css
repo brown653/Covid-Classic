@@ -1727,3 +1727,130 @@ body {
     font-weight: 680 !important;
   }
 }
+
+/* Placeholder player avatars under matchup names */
+.rc-side-content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rc-side-blue .rc-side-content {
+  align-items: flex-end;
+}
+
+.rc-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.rc-side-blue .rc-avatar-row {
+  justify-content: flex-end;
+}
+
+.rc-avatar-card {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+
+.rc-avatar-circle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.95) 0 7px, transparent 8px),
+    linear-gradient(180deg, #f9f4dc, #dfd3a7);
+  border: 2px solid rgba(11, 47, 31, 0.65);
+  box-shadow:
+    0 7px 14px rgba(11, 47, 31, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+  color: #063b23;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .02em;
+}
+
+.rc-avatar-circle span {
+  transform: translateY(2px);
+}
+
+.rc-avatar-card small {
+  max-width: 58px;
+  color: rgba(11, 47, 31, 0.74);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rc-match-side.leading .rc-avatar-circle {
+  background:
+    radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.98) 0 7px, transparent 8px),
+    linear-gradient(180deg, #fff8d6, #e2c247);
+  border-color: rgba(255, 255, 255, 0.92);
+  color: #063b23;
+  box-shadow:
+    0 8px 16px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.rc-match-side.leading .rc-avatar-card small {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.rc-match-card {
+  grid-template-rows: minmax(154px, auto) 52px !important;
+}
+
+.rc-match-side {
+  min-height: 154px !important;
+}
+
+@media (max-width: 700px) {
+  .rc-match-card {
+    grid-template-rows: minmax(198px, auto) 44px !important;
+  }
+
+  .rc-match-side {
+    min-height: 198px !important;
+    padding: 16px 14px !important;
+    gap: 9px !important;
+  }
+
+  .rc-side-red.leading {
+    padding-right: 34px !important;
+  }
+
+  .rc-side-blue.leading {
+    padding-left: 34px !important;
+  }
+
+  .rc-match-side h3 {
+    font-size: 15px !important;
+    line-height: 1.16 !important;
+  }
+
+  .rc-avatar-row {
+    gap: 6px !important;
+  }
+
+  .rc-avatar-circle {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 11px !important;
+    border-width: 1.5px !important;
+  }
+
+  .rc-avatar-card small {
+    max-width: 45px !important;
+    font-size: 9px !important;
+  }
+}
