@@ -18,6 +18,17 @@ const defaultPlayers = [
   "Pat Lavelle",
 ];
 
+const PLAYER_PHOTOS = {
+  "Al Brown": "/avatars/al-brown.jpg",
+  "Charles Mayer": "/avatars/charles-mayer.jpg",
+  "Mike Luddy": "/avatars/mike-luddy.jpg",
+  "Mike Paladino": "/avatars/mike-paladino.jpg",
+  "Kevin Gilmore": "/avatars/kevin-gilmore.jpg",
+  "Jason Spendley": "/avatars/jason-spendley.jpg",
+  "Matt Brooks": "/avatars/matt-brooks.jpg",
+  "Pat Lavelle": "/avatars/pat-lavelle.jpg",
+};
+
 const courses = {
   jackFrost: {
     name: "Jack Frost National",
@@ -896,8 +907,12 @@ function App() {
       <div className={`rc-avatar-row ${side === "team2" ? "team2" : "team1"}`}>
         {avatarPlayers.map((player) => (
           <div className="rc-avatar-card" key={player}>
-            <div className="rc-avatar-circle" aria-label={`${player} headshot placeholder`}>
-              <span>{getPlayerInitials(player)}</span>
+            <div className="rc-avatar-circle" aria-label={`${player} headshot`}>
+              {PLAYER_PHOTOS[player] ? (
+                <img src={PLAYER_PHOTOS[player]} alt={player} />
+              ) : (
+                <span>{getPlayerInitials(player)}</span>
+              )}
             </div>
             <small>{player.split(" ")[0]}</small>
           </div>
