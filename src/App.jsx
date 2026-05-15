@@ -881,6 +881,31 @@ function App() {
     return `${formatPoints(points[0])}-${formatPoints(points[1])}`;
   }
 
+  function getPlayerInitials(player) {
+    return player
+      .split(" ")
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }
+
+  function PlayerAvatarRow({ players: avatarPlayers, side }) {
+    return (
+      <div className={`rc-avatar-row ${side === "team2" ? "team2" : "team1"}`}>
+        {avatarPlayers.map((player) => (
+          <div className="rc-avatar-card" key={player}>
+            <div className="rc-avatar-circle" aria-label={`${player} headshot placeholder`}>
+              <span>{getPlayerInitials(player)}</span>
+            </div>
+            <small>{player.split(" ")[0]}</small>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   function getStartedRoundId() {
     for (const roundId of [3, 2, 1]) {
       const group = matchupGroups.find((item) => item.roundId === roundId);
@@ -959,7 +984,10 @@ function App() {
       <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
           <div className="rc-player-dot">T1</div>
-          <h3>{matchup.sideAPlayers.join(" / ")}</h3>
+          <div className="rc-side-content">
+            <h3>{matchup.sideAPlayers.join(" / ")}</h3>
+            <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
+          </div>
         </div>
 
         <div className={`rc-match-center ${leader === "team1" ? "red-leader" : leader === "team2" ? "blue-leader" : "tie-leader"}`}>
@@ -973,7 +1001,10 @@ function App() {
         </div>
 
         <div className={`rc-match-side rc-side-blue ${leader === "team2" ? "leading" : ""}`}>
-          <h3>{matchup.sideBPlayers.join(" / ")}</h3>
+          <div className="rc-side-content">
+            <h3>{matchup.sideBPlayers.join(" / ")}</h3>
+            <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
+          </div>
           <div className="rc-player-dot">T2</div>
         </div>
 
