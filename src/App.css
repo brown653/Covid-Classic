@@ -1971,100 +1971,67 @@ body {
     line-height: 1 !important;
   }
 }
-/* Bigger + centered avatar cards in matchup side panels */
 
-.match-side,
-.match-left,
-.match-right,
-.team-side,
-.player-side {
-  position: relative;
-}
 
-/* Center the avatar group inside each team panel */
-.avatar-row,
-.player-avatar-row,
-.avatar-group,
-.player-group {
-  width: 100%;
-  display: flex !important;
+/* Real headshot avatars */
+.rc-avatar-row {
   justify-content: center !important;
-  align-items: flex-start !important;
+  align-items: center !important;
   gap: 22px !important;
-  margin-top: 14px !important;
-  flex-wrap: nowrap !important;
 }
 
-/* Each player avatar block */
-.avatar-card,
-.player-avatar,
-.player-chip {
-  display: flex !important;
-  flex-direction: column !important;
+.rc-avatar-card {
   align-items: center !important;
-  justify-content: center !important;
-  min-width: 74px !important;
   text-align: center !important;
 }
 
-/* Make the circles bigger */
-.avatar-circle,
-.player-avatar-circle,
-.player-headshot {
-  width: 58px !important;
-  height: 58px !important;
-  min-width: 58px !important;
-  min-height: 58px !important;
+.rc-avatar-circle {
+  width: 64px !important;
+  height: 64px !important;
+  min-width: 64px !important;
+  min-height: 64px !important;
+  overflow: hidden !important;
   border-radius: 999px !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  font-size: 20px !important;
-  font-weight: 800 !important;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12) !important;
+  background: #f8f1d3 !important;
+  border: 3px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2) !important;
 }
 
-/* Small name under avatar */
-.avatar-name,
-.player-avatar-name,
-.player-first-name {
-  margin-top: 6px !important;
+.rc-avatar-circle img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+.rc-avatar-card small {
+  margin-top: 7px !important;
   font-size: 13px !important;
-  line-height: 1.1 !important;
-  font-weight: 700 !important;
-  text-align: center !important;
-  white-space: nowrap !important;
+  line-height: 1.05 !important;
+  font-weight: 800 !important;
 }
 
-/* Mobile tuning */
+.rc-side-blue.leading .rc-avatar-circle,
+.rc-side-red.leading .rc-avatar-circle {
+  border-color: rgba(255, 255, 255, 0.95) !important;
+}
+
 @media (max-width: 700px) {
-  .avatar-row,
-  .player-avatar-row,
-  .avatar-group,
-  .player-group {
-    gap: 16px !important;
-    margin-top: 10px !important;
+  .rc-avatar-row {
+    gap: 12px !important;
   }
 
-  .avatar-card,
-  .player-avatar,
-  .player-chip {
-    min-width: 62px !important;
+  .rc-avatar-circle {
+    width: 54px !important;
+    height: 54px !important;
+    min-width: 54px !important;
+    min-height: 54px !important;
   }
 
-  .avatar-circle,
-  .player-avatar-circle,
-  .player-headshot {
-    width: 50px !important;
-    height: 50px !important;
-    min-width: 50px !important;
-    min-height: 50px !important;
-    font-size: 17px !important;
-  }
-
-  .avatar-name,
-  .player-avatar-name,
-  .player-first-name {
-    font-size: 12px !important;
+  .rc-avatar-card small {
+    font-size: 11px !important;
+    max-width: 58px !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
   }
 }
