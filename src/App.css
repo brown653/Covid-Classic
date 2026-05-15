@@ -965,172 +965,196 @@ select {
     width: 40px !important;
   }
 }
-/* Scorecard color/font cleanup — paste at very bottom of App.css */
 
-/* Clean up the match header so white text never bleeds onto white background */
-.detail-hero {
-  background: #ffffff !important;
-  border: 1px solid #d6dce5 !important;
-  border-top: 8px solid #061a38 !important;
-  border-left: 0 !important;
-  border-radius: 18px 18px 0 0 !important;
-  padding: 26px 30px !important;
-  overflow: hidden !important;
-}
-
-.detail-hero::before {
-  display: none !important;
-}
-
-.detail-hero p {
-  color: #c90818 !important;
-  text-shadow: none !important;
-  font-size: 12px !important;
-  letter-spacing: 1.5px !important;
-  font-weight: 950 !important;
-}
-
-.detail-hero h2 {
-  color: #061a38 !important;
-  text-shadow: none !important;
-  font-size: clamp(24px, 3.6vw, 36px) !important;
-  line-height: 1.08 !important;
-  letter-spacing: -0.045em !important;
-  max-width: 720px !important;
-}
-
-.detail-hero span {
-  background: #061a38 !important;
-  color: #ffffff !important;
-  box-shadow: none !important;
-}
-
-/* Make the front/back/total boxes cleaner and more Ryder-style */
-.detail-score-boxes div {
-  background: #f6f8fb !important;
-  border: 1px solid #d7dce5 !important;
-  border-radius: 12px !important;
-}
-
-.detail-score-boxes span {
-  color: #6b7280 !important;
-}
-
-.detail-score-boxes strong {
-  color: #061a38 !important;
-}
-
-/* Tighten scorecard fonts */
-.scorecard {
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
-  font-size: 13px !important;
-}
-
-.scorecard th {
-  font-size: 12px !important;
-  font-weight: 950 !important;
-}
-
-.scorecard-name {
-  color: #061a38 !important;
-  background: #ffffff !important;
-  font-weight: 950 !important;
-}
-
-/* Make player rows less harsh */
-.scorecard tbody tr:not(.divider):not(.result-row) td {
-  background: #ffffff !important;
-  color: #061a38 !important;
-}
-
-.scorecard tbody tr:not(.divider):not(.result-row):nth-child(even) td {
-  background: #fafbfc !important;
-}
-
-/* Keep team divider bars bold but clean */
-.divider td {
-  color: #ffffff !important;
-  font-weight: 950 !important;
-  letter-spacing: 1.1px !important;
-}
-
-/* Inputs/readability */
-.score-input {
-  background: #ffffff !important;
-  color: #061a38 !important;
-  border: 1px solid #c9d1dd !important;
-  border-radius: 8px !important;
-  font-weight: 950 !important;
-}
-
-.net-note {
-  color: #7a8290 !important;
-  font-weight: 750 !important;
-}
-
-.pop-dot {
-  color: #c90818 !important;
-}
-
-@media (max-width: 780px) {
-  .detail-hero {
-    padding: 20px !important;
-  }
-
-  .detail-hero h2 {
-    font-size: 26px !important;
-  }
-}
-/* Detail page sleek cleanup - paste at the very bottom of src/App.css */
-
+/* FINAL SLEEK CLEANUP - less blocky, clearer winning side */
 :root {
-  --cc-navy: #071b36;
-  --cc-blue: #004b93;
-  --cc-red: #c90818;
-  --cc-soft: #f6f8fb;
-  --cc-line: #d8dee8;
-  --cc-text: #071b36;
-  --cc-muted: #6b7280;
+  --rc-red: #c8102e;
+  --rc-blue: #004b93;
+  --rc-blue-dark: #071d35;
+  --rc-ink: #071426;
+  --rc-muted: #657080;
+  --rc-line: #d9dee7;
+  --rc-soft: #f7f9fc;
 }
 
 body,
 button,
 input,
-select,
-table {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-  letter-spacing: -0.01em !important;
+select {
+  font-family: "Aptos", "Segoe UI", Roboto, Arial, sans-serif !important;
+  letter-spacing: 0 !important;
 }
 
-/* Match page buttons */
+.rc-brand {
+  font-size: 20px !important;
+  font-weight: 750 !important;
+  letter-spacing: .14em !important;
+}
+
+.rc-section-head p,
+.rc-section-head h2,
+.rc-match-side h3,
+.rc-match-center p,
+.rc-match-center strong,
+.rc-points-row span,
+.rc-hole-dot,
+.detail-hero p,
+.detail-hero h2,
+.detail-hero span,
+.detail-score-boxes span,
+.detail-score-boxes strong,
+.scorecard th,
+.scorecard td,
+.scorecard-name,
+.score-input,
+.divider td,
+.result-row td {
+  font-family: "Aptos", "Segoe UI", Roboto, Arial, sans-serif !important;
+  letter-spacing: 0 !important;
+}
+
+.rc-section-head p,
+.detail-hero p,
+.divider td,
+.rc-roster-card p,
+.rc-round-summary p {
+  letter-spacing: .08em !important;
+  font-weight: 700 !important;
+}
+
+.rc-section-head h2 {
+  font-size: 28px !important;
+  font-weight: 720 !important;
+  letter-spacing: -.02em !important;
+}
+
+.rc-match-card {
+  grid-template-columns: minmax(0, 1fr) 240px minmax(0, 1fr) !important;
+  border: 1px solid #d8dde7 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 12px 30px rgba(7, 20, 38, .12) !important;
+  overflow: hidden !important;
+}
+
+.rc-match-side {
+  min-height: 126px !important;
+  padding: 26px 30px !important;
+}
+
+.rc-side-red,
+.rc-side-blue {
+  clip-path: none !important;
+}
+
+.rc-side-red {
+  background: linear-gradient(135deg, #c8102e, #a80d25) !important;
+  border-right: 6px solid rgba(255,255,255,.88) !important;
+}
+
+.rc-side-blue {
+  background: linear-gradient(135deg, #004b93, #073b72) !important;
+  border-left: 6px solid rgba(255,255,255,.88) !important;
+}
+
+.rc-match-side h3 {
+  font-size: 20px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+  text-shadow: none !important;
+}
+
+.rc-match-side.leading {
+  box-shadow: inset 0 -6px 0 rgba(255,255,255,.22) !important;
+}
+
+.rc-match-side.leading h3::after {
+  content: "" !important;
+}
+
+.rc-player-dot {
+  width: 46px !important;
+  height: 46px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  background: rgba(255,255,255,.12) !important;
+}
+
+.rc-match-center {
+  background: #fff !important;
+  padding: 20px 14px !important;
+  border-inline: 1px solid #d8dde7 !important;
+}
+
+.rc-match-center p {
+  color: #667085 !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+}
+
+.rc-match-center p span {
+  color: #8a94a6 !important;
+  font-weight: 550 !important;
+}
+
+.rc-match-center strong {
+  margin: 7px 0 12px !important;
+  font-size: 28px !important;
+  line-height: 1.05 !important;
+  font-weight: 760 !important;
+  letter-spacing: -.02em !important;
+  color: #071426 !important;
+}
+
+.rc-match-center.red-leader strong { color: var(--rc-red) !important; }
+.rc-match-center.blue-leader strong { color: var(--rc-blue) !important; }
+.rc-match-center.tie-leader strong { color: #071426 !important; }
+
+.rc-points-row span {
+  background: #eef2f7 !important;
+  color: #071426 !important;
+  border: 1px solid #d8dde7 !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+  padding: 6px 9px !important;
+}
+
+.rc-hole-strip {
+  background: #f7f9fc !important;
+  border-top: 1px solid #d8dde7 !important;
+  gap: 10px !important;
+}
+
+.rc-hole-dot {
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 11px !important;
+  font-weight: 650 !important;
+}
+
+/* Detail page - remove diagonal block and make it clean/pro */
 .detail-actions {
   max-width: 1188px !important;
-  margin: 24px auto 10px !important;
+  margin: 22px auto 12px !important;
 }
 
 .detail-actions button {
-  border-radius: 12px !important;
-  padding: 11px 16px !important;
   font-weight: 700 !important;
   letter-spacing: 0 !important;
-  box-shadow: 0 6px 18px rgba(7, 27, 54, 0.12) !important;
 }
 
-/* Clean professional match header - remove diagonal red block */
 .detail-hero {
   max-width: 1188px !important;
-  margin: 0 auto !important;
+  margin: 0 auto 0 !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.75fr) !important;
-  gap: 28px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 24px !important;
   align-items: center !important;
-  background: rgba(255, 255, 255, 0.98) !important;
-  border: 1px solid var(--cc-line) !important;
-  border-top: 8px solid var(--cc-navy) !important;
-  border-left: 0 !important;
+  background: rgba(255,255,255,.98) !important;
+  border: 1px solid #d8dde7 !important;
+  border-left: 8px solid #004b93 !important;
   border-radius: 18px 18px 0 0 !important;
-  box-shadow: 0 18px 42px rgba(7, 27, 54, 0.14) !important;
-  padding: 26px 28px !important;
+  box-shadow: 0 14px 36px rgba(7, 20, 38, .14) !important;
+  padding: 28px 32px !important;
   overflow: hidden !important;
 }
 
@@ -1141,169 +1165,119 @@ table {
 }
 
 .detail-hero p {
-  margin: 0 0 10px !important;
-  color: var(--cc-red) !important;
+  margin: 0 0 8px !important;
+  color: #667085 !important;
   text-transform: uppercase !important;
-  letter-spacing: 1.1px !important;
   font-size: 12px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
 }
 
 .detail-hero h2 {
   margin: 0 !important;
-  color: var(--cc-text) !important;
-  max-width: 720px !important;
-  font-size: clamp(26px, 3vw, 40px) !important;
-  line-height: 1.08 !important;
-  font-weight: 800 !important;
-  letter-spacing: -0.045em !important;
+  color: #071426 !important;
+  max-width: 760px !important;
+  font-size: clamp(25px, 3.2vw, 36px) !important;
+  line-height: 1.12 !important;
+  font-weight: 720 !important;
+  letter-spacing: -.02em !important;
 }
 
 .detail-hero span {
   display: inline-flex !important;
-  align-items: center !important;
-  width: fit-content !important;
-  margin-top: 16px !important;
-  background: #eef3f8 !important;
-  color: var(--cc-navy) !important;
-  border: 1px solid var(--cc-line) !important;
+  margin-top: 14px !important;
+  background: #eef4fb !important;
+  color: #004b93 !important;
+  border: 1px solid #cfe0f3 !important;
   border-radius: 999px !important;
   padding: 8px 14px !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
   font-size: 13px !important;
-  letter-spacing: 0 !important;
 }
 
 .detail-score-boxes {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 12px !important;
+  min-width: 420px !important;
 }
 
 .detail-score-boxes div {
-  background: var(--cc-soft) !important;
-  border: 1px solid var(--cc-line) !important;
-  border-radius: 16px !important;
-  padding: 15px 12px !important;
-  box-shadow: none !important;
+  background: #f7f9fc !important;
+  border: 1px solid #d8dde7 !important;
+  border-radius: 14px !important;
+  padding: 16px 14px !important;
 }
 
 .detail-score-boxes span {
-  color: var(--cc-muted) !important;
+  color: #667085 !important;
   font-size: 11px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.06em !important;
+  font-weight: 700 !important;
 }
 
 .detail-score-boxes strong {
-  color: var(--cc-navy) !important;
-  font-size: 30px !important;
-  font-weight: 800 !important;
+  color: #071426 !important;
+  font-size: 28px !important;
+  font-weight: 760 !important;
 }
 
-/* Scorecard typography and colors */
 .scorecard-shell {
-  max-width: 1188px !important;
   border-radius: 0 0 18px 18px !important;
-  border: 1px solid var(--cc-line) !important;
-  border-top: 0 !important;
-  background: #ffffff !important;
-  box-shadow: 0 20px 50px rgba(7, 27, 54, 0.12) !important;
 }
 
 .scorecard {
   font-size: 13px !important;
-  font-weight: 600 !important;
 }
 
 .scorecard th,
 .scorecard td {
-  border-color: #e5e9f0 !important;
-  padding: 8px 7px !important;
+  padding: 8px 6px !important;
 }
 
 .scorecard thead th {
-  background: var(--cc-navy) !important;
-  color: #ffffff !important;
-  font-weight: 800 !important;
-  letter-spacing: 0 !important;
-}
-
-.scorecard thead tr:nth-child(2) th,
-.scorecard thead tr:nth-child(3) th,
-.scorecard thead tr:nth-child(2) .scorecard-name,
-.scorecard thead tr:nth-child(3) .scorecard-name {
-  background: #f3f6fa !important;
-  color: var(--cc-navy) !important;
+  background: #071d35 !important;
+  color: #fff !important;
   font-weight: 700 !important;
 }
 
 .scorecard-name {
-  background: #ffffff !important;
-  color: var(--cc-navy) !important;
-  font-weight: 750 !important;
-  letter-spacing: -0.02em !important;
-}
-
-.scorecard-name strong,
-.scorecard strong {
-  font-weight: 750 !important;
-}
-
-.divider td {
-  color: #ffffff !important;
-  font-size: 12px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.08em !important;
-  padding: 12px 16px !important;
+  color: #071426 !important;
+  font-weight: 700 !important;
 }
 
 .score-input {
-  height: 34px !important;
   border-radius: 10px !important;
-  border: 1px solid #cfd6e2 !important;
-  color: var(--cc-navy) !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  background: #ffffff !important;
+  font-weight: 650 !important;
+  color: #071426 !important;
 }
 
-.score-input:focus {
-  border-color: var(--cc-blue) !important;
-  box-shadow: 0 0 0 3px rgba(0, 75, 147, 0.13) !important;
-}
-
-.score-total {
-  background: #f5f7fb !important;
-  color: var(--cc-navy) !important;
-  font-weight: 800 !important;
-}
-
+.score-total,
 .result-row td,
 .result-row .scorecard-name {
-  background: var(--cc-navy) !important;
-  color: #ffffff !important;
-  font-weight: 800 !important;
+  font-weight: 700 !important;
+}
+
+.divider td {
+  font-weight: 700 !important;
+  letter-spacing: .07em !important;
 }
 
 .net-note,
 .pop-dot {
-  font-weight: 700 !important;
-  letter-spacing: 0 !important;
+  font-weight: 650 !important;
 }
 
 @media (max-width: 780px) {
+  .rc-match-card {
+    grid-template-columns: 1fr !important;
+  }
+  .rc-side-red,
+  .rc-side-blue {
+    border-left: 0 !important;
+    border-right: 0 !important;
+  }
   .detail-hero {
     grid-template-columns: 1fr !important;
-    gap: 18px !important;
-    padding: 22px 18px !important;
+    padding: 22px !important;
   }
-
-  .detail-hero h2 {
-    font-size: 27px !important;
-  }
-
-  .detail-score-boxes strong {
-    font-size: 26px !important;
+  .detail-score-boxes {
+    min-width: 0 !important;
+    width: 100% !important;
   }
 }
