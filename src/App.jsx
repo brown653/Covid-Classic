@@ -985,7 +985,6 @@ function App() {
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
           <div className="rc-player-dot">T1</div>
           <div className="rc-side-content">
-            <h3>{matchup.sideAPlayers.join(" / ")}</h3>
             <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
           </div>
         </div>
@@ -1002,7 +1001,6 @@ function App() {
 
         <div className={`rc-match-side rc-side-blue ${leader === "team2" ? "leading" : ""}`}>
           <div className="rc-side-content">
-            <h3>{matchup.sideBPlayers.join(" / ")}</h3>
             <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
           </div>
           <div className="rc-player-dot">T2</div>
