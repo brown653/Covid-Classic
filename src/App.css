@@ -2035,3 +2035,220 @@ body {
     text-overflow: ellipsis !important;
   }
 }
+/* Mobile avatar cleanup — keeps layout, reduces jumbled photo feel */
+
+@media (max-width: 700px) {
+  /* Give the whole page a little cleaner breathing room */
+  .app {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+
+  /* Match cards: keep the 3-column Ryder style but tighten it */
+  .match-card,
+  .match-row,
+  .live-match-card {
+    grid-template-columns: 1fr 150px 1fr !important;
+    min-height: 210px !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  /* Team panels */
+  .match-left,
+  .match-right,
+  .team-panel,
+  .side-panel {
+    padding: 18px 10px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-width: 0 !important;
+  }
+
+  /* T1/T2 circle */
+  .team-badge,
+  .side-badge,
+  .team-circle {
+    position: absolute !important;
+    top: 12px !important;
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    font-size: 13px !important;
+    z-index: 4 !important;
+  }
+
+  .match-left .team-badge,
+  .match-left .side-badge,
+  .match-left .team-circle {
+    left: 12px !important;
+  }
+
+  .match-right .team-badge,
+  .match-right .side-badge,
+  .match-right .team-circle {
+    right: 12px !important;
+  }
+
+  /* Avatar group: clean 2-up layout */
+  .avatar-row,
+  .player-avatar-row,
+  .avatar-group,
+  .player-group {
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    justify-items: center !important;
+    align-items: start !important;
+    gap: 8px !important;
+    margin: 18px auto 0 !important;
+    padding: 0 4px !important;
+  }
+
+  .player-avatar,
+  .avatar-card,
+  .player-chip {
+    width: 100% !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  /* Photos: slightly smaller and consistent */
+  .avatar-circle,
+  .player-avatar-circle,
+  .player-headshot,
+  .avatar-photo {
+    width: 58px !important;
+    height: 58px !important;
+    min-width: 58px !important;
+    min-height: 58px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border: 3px solid rgba(255, 255, 255, 0.88) !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22) !important;
+    background: #f7f1dc !important;
+  }
+
+  .avatar-circle img,
+  .player-avatar-circle img,
+  .player-headshot img,
+  .avatar-photo img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center top !important;
+    border-radius: 50% !important;
+    display: block !important;
+  }
+
+  /* Names under photos */
+  .avatar-name,
+  .player-avatar-name,
+  .player-first-name {
+    margin-top: 6px !important;
+    font-size: 12px !important;
+    line-height: 1.05 !important;
+    font-weight: 800 !important;
+    max-width: 70px !important;
+    white-space: normal !important;
+    overflow-wrap: normal !important;
+    word-break: normal !important;
+  }
+
+  /* Winning/losing side colors still stay clear */
+  .match-left:not(.winning-side),
+  .match-right:not(.winning-side) {
+    background: rgba(244, 241, 230, 0.94) !important;
+  }
+
+  .winning-side .avatar-name,
+  .winning-side .player-avatar-name,
+  .winning-side .player-first-name {
+    color: #fff8dc !important;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.22) !important;
+  }
+
+  /* Center score panel: narrower and calmer */
+  .match-center,
+  .score-panel,
+  .match-score-panel {
+    padding: 12px 8px !important;
+    min-width: 0 !important;
+  }
+
+  .match-status-main,
+  .match-score-title,
+  .match-lead-text {
+    font-size: 24px !important;
+    line-height: 0.98 !important;
+    letter-spacing: -0.03em !important;
+  }
+
+  .score-pills,
+  .segment-pills {
+    gap: 4px !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+  }
+
+  .score-pill,
+  .segment-pill {
+    font-size: 10px !important;
+    padding: 5px 8px !important;
+    min-width: auto !important;
+  }
+
+  /* Hole dots fit better */
+  .hole-dots {
+    gap: 6px !important;
+    padding: 12px 8px !important;
+    overflow-x: auto !important;
+    justify-content: flex-start !important;
+  }
+
+  .hole-dot {
+    width: 23px !important;
+    height: 23px !important;
+    min-width: 23px !important;
+    font-size: 11px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .match-card,
+  .match-row,
+  .live-match-card {
+    grid-template-columns: 1fr 138px 1fr !important;
+  }
+
+  .avatar-circle,
+  .player-avatar-circle,
+  .player-headshot,
+  .avatar-photo {
+    width: 52px !important;
+    height: 52px !important;
+    min-width: 52px !important;
+    min-height: 52px !important;
+  }
+
+  .avatar-name,
+  .player-avatar-name,
+  .player-first-name {
+    font-size: 11px !important;
+    max-width: 62px !important;
+  }
+
+  .match-status-main,
+  .match-score-title,
+  .match-lead-text {
+    font-size: 22px !important;
+  }
+}
