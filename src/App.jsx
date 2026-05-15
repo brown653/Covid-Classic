@@ -37,8 +37,8 @@ const rounds = [
   { id: 3, name: "Round 3", shortName: "R3", courseKey: "ballyowen", format: "Singles Matches" },
 ];
 
-const RACE_TO = 9.5;
-const TOTAL_WEEKEND_POINTS = 18;
+const RACE_TO = 12.5;
+const TOTAL_WEEKEND_POINTS = 24;
 
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -453,6 +453,18 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
+  function getTeamPairMatchesForRound(roundId) {
+    return [
+      [teams[roundId][0], teams[roundId][2]],
+      [teams[roundId][1], teams[roundId][3]],
+    ];
+  }
+
+  function getPairMatchSegmentForRound(roundId, pairA, pairB, start, end) {
+    if (roundId === 1) return getStablefordSegment(pairA, pairB, start, end);
+    return getScramblePairSegment(pairA, pairB, start, end);
+  }
+
   function awardLivePoint(segment) {
     if (!segment.holesCounted) return [0, 0];
 
@@ -511,11 +523,16 @@ function App() {
     let team2 = 0;
 
     [1, 2].forEach((roundId) => {
-      const round = roundSegments[roundId];
-      [round.front, round.back, round.full].forEach((segment) => {
-        const points = awardLivePoint(segment);
-        team1 += points[0];
-        team2 += points[1];
+      getTeamPairMatchesForRound(roundId).forEach(([pairA, pairB]) => {
+        [
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 9),
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 10, 18),
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 18),
+        ].forEach((segment) => {
+          const points = awardLivePoint(segment);
+          team1 += points[0];
+          team2 += points[1];
+        });
       });
     });
 
@@ -813,11 +830,16 @@ function App() {
     let team2 = 0;
 
     if (roundId === 1 || roundId === 2) {
-      const round = roundSegments[roundId];
-      [round.front, round.back, round.full].forEach((segment) => {
-        const points = awardLivePoint(segment);
-        team1 += points[0];
-        team2 += points[1];
+      getTeamPairMatchesForRound(roundId).forEach(([pairA, pairB]) => {
+        [
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 9),
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 10, 18),
+          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 18),
+        ].forEach((segment) => {
+          const points = awardLivePoint(segment);
+          team1 += points[0];
+          team2 += points[1];
+        });
       });
       return { team1, team2 };
     }
