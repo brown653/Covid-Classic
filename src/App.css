@@ -767,3 +767,190 @@ button { cursor: pointer; }
     font-size: 14px !important;
   }
 }
+/* Fix winner color blocks + mobile scorecard scroll */
+
+/* 1) Non-leading team should be soft grey, not plain white */
+.rc-match-side,
+.detail-side {
+  background: #eef2f6 !important;
+  color: #071529 !important;
+}
+
+/* Keep the winning side obvious. Works with either .leading or parent leader class. */
+.rc-side-red.leading,
+.rc-match-card.leader-team1 .rc-side-red,
+.detail-hero.leader-team1 .detail-side-red {
+  background: var(--red, var(--rc-red, #d20a17)) !important;
+  color: #ffffff !important;
+  clip-path: polygon(0 0, calc(100% - 68px) 0, 100% 50%, calc(100% - 68px) 100%, 0 100%) !important;
+  padding-right: 88px !important;
+}
+
+.rc-side-blue.leading,
+.rc-match-card.leader-team2 .rc-side-blue,
+.detail-hero.leader-team2 .detail-side-blue {
+  background: var(--blue, var(--rc-blue, #004b93)) !important;
+  color: #ffffff !important;
+  clip-path: polygon(68px 0, 100% 0, 100% 100%, 68px 100%, 0 50%) !important;
+  padding-left: 88px !important;
+}
+
+.rc-side-red.leading h3,
+.rc-side-blue.leading h3,
+.rc-match-card.leader-team1 .rc-side-red h3,
+.rc-match-card.leader-team2 .rc-side-blue h3,
+.detail-hero.leader-team1 .detail-side-red h2,
+.detail-hero.leader-team2 .detail-side-blue h2,
+.detail-hero.leader-team1 .detail-side-red p,
+.detail-hero.leader-team2 .detail-side-blue p {
+  color: #ffffff !important;
+}
+
+/* 2) Scorecard should scroll horizontally on mobile instead of squeezing/jumbling */
+.scorecard-shell {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+}
+
+.scorecard-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+.scorecard {
+  width: max-content !important;
+  min-width: 1220px !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+}
+
+.scorecard th,
+.scorecard td {
+  min-width: 56px !important;
+  width: 56px !important;
+  max-width: 56px !important;
+  white-space: nowrap !important;
+  text-align: center !important;
+  padding: 8px 5px !important;
+}
+
+.scorecard .scorecard-name,
+.scorecard th.scorecard-name,
+.scorecard td.scorecard-name {
+  min-width: 185px !important;
+  width: 185px !important;
+  max-width: 185px !important;
+  text-align: left !important;
+  white-space: normal !important;
+  overflow: hidden !important;
+}
+
+.scorecard input {
+  width: 46px !important;
+  height: 36px !important;
+  min-width: 46px !important;
+  border-radius: 8px !important;
+}
+
+/* Mobile-specific: remove sticky name column because it was causing the jumbled/overlap look */
+@media (max-width: 760px) {
+  html,
+  body {
+    overflow-x: hidden !important;
+  }
+
+  .app,
+  .rc-page {
+    width: 100% !important;
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .rc-match-card,
+  .detail-hero {
+    overflow: hidden !important;
+  }
+
+  /* Keep winner color block on mobile, but remove the diagonal cut so it does not crop names */
+  .rc-side-red.leading,
+  .rc-match-card.leader-team1 .rc-side-red,
+  .detail-hero.leader-team1 .detail-side-red,
+  .rc-side-blue.leading,
+  .rc-match-card.leader-team2 .rc-side-blue,
+  .detail-hero.leader-team2 .detail-side-blue {
+    clip-path: none !important;
+    padding: 22px !important;
+  }
+
+  .rc-match-side:not(.leading),
+  .detail-side {
+    background: #eef2f6 !important;
+  }
+
+  .rc-side-red.leading,
+  .rc-match-card.leader-team1 .rc-side-red,
+  .detail-hero.leader-team1 .detail-side-red {
+    background: var(--red, var(--rc-red, #d20a17)) !important;
+    color: #fff !important;
+  }
+
+  .rc-side-blue.leading,
+  .rc-match-card.leader-team2 .rc-side-blue,
+  .detail-hero.leader-team2 .detail-side-blue {
+    background: var(--blue, var(--rc-blue, #004b93)) !important;
+    color: #fff !important;
+  }
+
+  .scorecard-shell {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    max-width: 100% !important;
+  }
+
+  .scorecard-wrap {
+    display: block !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    overscroll-behavior-x: contain !important;
+  }
+
+  .scorecard {
+    min-width: 1200px !important;
+    width: 1200px !important;
+    font-size: 13px !important;
+  }
+
+  .scorecard th,
+  .scorecard td {
+    min-width: 54px !important;
+    width: 54px !important;
+    max-width: 54px !important;
+    padding: 7px 4px !important;
+  }
+
+  .scorecard .scorecard-name,
+  .scorecard th.scorecard-name,
+  .scorecard td.scorecard-name {
+    position: static !important;
+    left: auto !important;
+    z-index: auto !important;
+    min-width: 170px !important;
+    width: 170px !important;
+    max-width: 170px !important;
+    box-shadow: none !important;
+  }
+
+  .scorecard input {
+    width: 44px !important;
+    min-width: 44px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+  }
+}
