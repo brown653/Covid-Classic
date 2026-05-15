@@ -732,7 +732,7 @@ function App() {
               }
             />
             {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
-              <div className="pop-dot">-{getHoleStrokes(roundId, player, hole)}</div>
+              <span className="pop-star" aria-label="Handicap stroke">{getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}</span>
             )}
           </td>
         ))}
@@ -751,7 +751,7 @@ function App() {
               }
             />
             {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
-              <div className="pop-dot">-{getHoleStrokes(roundId, player, hole)}</div>
+              <span className="pop-star" aria-label="Handicap stroke">{getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}</span>
             )}
           </td>
         ))}
