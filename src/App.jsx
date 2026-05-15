@@ -37,6 +37,9 @@ const rounds = [
   { id: 3, name: "Round 3", shortName: "R3", courseKey: "ballyowen", format: "Singles Matches" },
 ];
 
+const RACE_TO = 9.5;
+const TOTAL_WEEKEND_POINTS = 18;
+
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
 
@@ -507,7 +510,8 @@ function App() {
     let team1 = 0;
     let team2 = 0;
 
-    Object.values(roundSegments).forEach((round) => {
+    [1, 2].forEach((roundId) => {
+      const round = roundSegments[roundId];
       [round.front, round.back, round.full].forEach((segment) => {
         const points = awardLivePoint(segment);
         team1 += points[0];
@@ -515,8 +519,20 @@ function App() {
       });
     });
 
+    teams[3].forEach((match) => {
+      [
+        getSinglesMatchSegment(match, 1, 9),
+        getSinglesMatchSegment(match, 10, 18),
+        getSinglesMatchSegment(match, 1, 18),
+      ].forEach((segment) => {
+        const points = awardLivePoint(segment);
+        team1 += points[0];
+        team2 += points[1];
+      });
+    });
+
     return { team1, team2 };
-  }, [roundSegments]);
+  }, [roundSegments, scores, teams, handicaps]);
 
   const matchupGroups = useMemo(() => {
     return [
@@ -792,47 +808,112 @@ function App() {
     );
   }
 
-  function AppShell({ children }) {
-    return (
-      <div className="app">
-        <header className="hero">
-          <div className="hero-left">
-            <p>Covid Classic</p>
-            <h1>Live Weekend Scoreboard</h1>
-            <span>Jack Frost · Ballyowen · 8-Man Cup</span>
-          </div>
+  function getRoundCupPoints(roundId) {
+    let team1 = 0;
+    let team2 = 0;
 
-          <div className="scorebug">
-            <div>
+    if (roundId === 1 || roundId === 2) {
+      const round = roundSegments[roundId];
+      [round.front, round.back, round.full].forEach((segment) => {
+        const points = awardLivePoint(segment);
+        team1 += points[0];
+        team2 += points[1];
+      });
+      return { team1, team2 };
+    }
+
+    teams[3].forEach((match) => {
+      [
+        getSinglesMatchSegment(match, 1, 9),
+        getSinglesMatchSegment(match, 10, 18),
+        getSinglesMatchSegment(match, 1, 18),
+      ].forEach((segment) => {
+        const points = awardLivePoint(segment);
+        team1 += points[0];
+        team2 += points[1];
+      });
+    });
+
+    return { team1, team2 };
+  }
+
+  function getMatchResultLabel(matchup) {
+    const full = getMatchupSegment(matchup, 1, 18);
+    if (!full.holesCounted) return "Not Started";
+    if (full.teamAScore === full.teamBScore) return "A/S";
+    return `${Math.abs(full.teamAScore - full.teamBScore)} UP`;
+  }
+
+  function getMatchLeader(matchup) {
+    const full = getMatchupSegment(matchup, 1, 18);
+    if (!full.holesCounted || full.teamAScore === full.teamBScore) return "tie";
+    if (full.higherIsBetter) return full.teamAScore > full.teamBScore ? "team1" : "team2";
+    return full.teamAScore < full.teamBScore ? "team1" : "team2";
+  }
+
+  function getSegmentPointLabel(segment) {
+    const points = awardLivePoint(segment);
+    return `${formatPoints(points[0])}-${formatPoints(points[1])}`;
+  }
+
+  function getStartedRoundId() {
+    for (const roundId of [3, 2, 1]) {
+      const group = matchupGroups.find((item) => item.roundId === roundId);
+      if (group?.items.some((matchup) => getMatchupSegment(matchup, 1, 18).holesCounted > 0)) {
+        return roundId;
+      }
+    }
+    return 1;
+  }
+
+  function AppShell({ children }) {
+    const leadPercent = Math.max(
+      0,
+      Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
+    );
+
+    return (
+      <div className="rc-page">
+        <div className="rc-topline">
+          <div className="rc-brand">COVID CLASSIC</div>
+          <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
+            {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
+          </div>
+        </div>
+
+        <header className="rc-score-header">
+          <div className="rc-score-meta">
+            <div className="rc-team-meta rc-team-one">
               <span>Team 1</span>
               <strong>{formatPoints(weekendScore.team1)}</strong>
+              <small>to win</small>
             </div>
-            <b>-</b>
-            <div>
-              <span>Team 2</span>
+
+            <div className="rc-race-meta">
+              <strong>Race to {RACE_TO}</strong>
+              <span>{formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed</span>
+            </div>
+
+            <div className="rc-team-meta rc-team-two">
+              <small>to win</small>
               <strong>{formatPoints(weekendScore.team2)}</strong>
+              <span>Team 2</span>
             </div>
+          </div>
+
+          <div className="rc-score-bar" aria-label="Weekend score progress">
+            <div className="rc-score-bar-red" style={{ width: `${leadPercent}%` }} />
+            <div className="rc-score-bar-score rc-left-score">{formatPoints(weekendScore.team1)}</div>
+            <div className="rc-score-bar-score rc-right-score">{formatPoints(weekendScore.team2)}</div>
           </div>
         </header>
 
-        <div className={`live-status ${connectionStatus === "Live" ? "is-live" : ""}`}>
-          {connectionStatus === "Live" ? "● Live Sync On" : `● ${connectionStatus}`}
-        </div>
-
         {!selectedMatchup && (
-          <nav className="nav-tabs">
-            <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>
-              Scoreboard
-            </button>
-            <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>
-              Enter Scores
-            </button>
-            <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>
-              Matchups
-            </button>
-            <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>
-              Setup
-            </button>
+          <nav className="rc-nav">
+            <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Scoring</button>
+            <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>Enter Scores</button>
+            <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>All Matches</button>
+            <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>Setup</button>
           </nav>
         )}
 
@@ -841,81 +922,124 @@ function App() {
     );
   }
 
+  function RyderMatchCard({ matchup, matchNumber }) {
+    const summary = getMatchupSummary(matchup);
+    const leader = getMatchLeader(matchup);
+    const resultLabel = getMatchResultLabel(matchup);
+    const holesPlayed = getMatchupSegment(matchup, 1, 18).holesCounted;
+
+    return (
+      <button className="rc-match-card" onClick={() => setSelectedMatchupId(matchup.id)}>
+        <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
+          <div className="rc-player-dot">T1</div>
+          <h3>{matchup.sideAPlayers.join(" / ")}</h3>
+        </div>
+
+        <div className="rc-match-center">
+          <p>Match {matchNumber} <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span></p>
+          <strong>{resultLabel}</strong>
+          <div className="rc-points-row">
+            <span>Front {getSegmentPointLabel(summary.front)}</span>
+            <span>Back {getSegmentPointLabel(summary.back)}</span>
+            <span>Total {getSegmentPointLabel(summary.full)}</span>
+          </div>
+        </div>
+
+        <div className={`rc-match-side rc-side-blue ${leader === "team2" ? "leading" : ""}`}>
+          <h3>{matchup.sideBPlayers.join(" / ")}</h3>
+          <div className="rc-player-dot">T2</div>
+        </div>
+
+        <div className="rc-hole-strip">
+          {Array.from({ length: 18 }, (_, index) => {
+            const hole = index + 1;
+            const result = getHoleResult(matchup, hole);
+            return (
+              <span
+                key={hole}
+                className={`rc-hole-dot ${result === "T1" ? "red" : result === "T2" ? "blue" : result === "E" ? "even" : ""}`}
+              >
+                {hole}
+              </span>
+            );
+          })}
+        </div>
+      </button>
+    );
+  }
+
   function HomeView() {
+    const currentRoundId = selectedRoundId || getStartedRoundId();
+    const currentGroup = matchupGroups.find((group) => group.roundId === currentRoundId) || matchupGroups[0];
+    const otherGroups = matchupGroups.filter((group) => group.roundId !== currentGroup.roundId);
+    const currentRoundPoints = getRoundCupPoints(currentGroup.roundId);
+
     return (
       <>
-        <section className="main-card cup-card">
-          <div className="cup-row">
-            <div className="cup-team">
-              <span>Team 1</span>
-              <strong>{formatPoints(weekendScore.team1)}</strong>
-              <small>{[...teams[1][0], ...teams[1][1]].join(" · ")}</small>
-            </div>
+        <section className="rc-session-tabs">
+          {matchupGroups.map((group) => (
+            <button
+              key={group.roundId}
+              className={currentGroup.roundId === group.roundId ? "active" : ""}
+              onClick={() => setSelectedRoundId(group.roundId)}
+            >
+              <span>{group.title}</span>
+              <strong>{group.subtitle}</strong>
+            </button>
+          ))}
+        </section>
 
-            <div className="cup-vs">VS</div>
-
-            <div className="cup-team">
-              <span>Team 2</span>
-              <strong>{formatPoints(weekendScore.team2)}</strong>
-              <small>{[...teams[1][2], ...teams[1][3]].join(" · ")}</small>
+        <section className="rc-session-card">
+          <div className="rc-section-head">
+            <div>
+              <p>Current Round Live Score</p>
+              <h2>{currentGroup.title} — {currentGroup.subtitle}</h2>
             </div>
+            <div className="rc-session-score">
+              {formatPoints(currentRoundPoints.team1)} - {formatPoints(currentRoundPoints.team2)}
+            </div>
+          </div>
+
+          <div className="rc-match-stack">
+            {currentGroup.items.map((matchup, index) => (
+              <RyderMatchCard key={matchup.id} matchup={matchup} matchNumber={index + 1} />
+            ))}
           </div>
         </section>
 
-        <section className="round-strip">
-          {[1, 2, 3].map((roundId) => {
-            const round = roundSegments[roundId];
-            const frontPoints = awardLivePoint(round.front);
-            const backPoints = awardLivePoint(round.back);
-            const fullPoints = awardLivePoint(round.full);
-            const team1 = frontPoints[0] + backPoints[0] + fullPoints[0];
-            const team2 = frontPoints[1] + backPoints[1] + fullPoints[1];
-
+        <section className="rc-other-rounds">
+          {otherGroups.map((group) => {
+            const points = getRoundCupPoints(group.roundId);
             return (
               <button
-                className="round-status-card"
-                key={roundId}
-                onClick={() => {
-                  setActiveTab("matchups");
-                }}
+                className="rc-round-summary"
+                key={group.roundId}
+                onClick={() => setSelectedRoundId(group.roundId)}
               >
-                <p>{round.label}</p>
-                <h3>{round.format}</h3>
-                <strong>{formatPoints(team1)} - {formatPoints(team2)}</strong>
-                <span>{getSegmentStatus(round.full)}</span>
+                <p>{group.title}</p>
+                <h3>{group.subtitle}</h3>
+                <strong>{formatPoints(points.team1)} - {formatPoints(points.team2)}</strong>
+                <span>View session</span>
               </button>
             );
           })}
         </section>
 
-        <section className="main-card">
-          <div className="section-title">
+        <section className="rc-team-footer">
+          <div className="rc-roster-card red">
             <div>
-              <p>Match Center</p>
-              <h2>Live Matchups</h2>
+              <p>Team 1</p>
+              <strong>{formatPoints(weekendScore.team1)}</strong>
             </div>
+            <span>{[...teams[1][0], ...teams[1][1]].join(" · ")}</span>
           </div>
 
-          <div className="matchup-list">
-            {flatMatchups.map((matchup) => {
-              const summary = getMatchupSummary(matchup);
-
-              return (
-                <button
-                  className="matchup-card"
-                  key={matchup.id}
-                  onClick={() => setSelectedMatchupId(matchup.id)}
-                >
-                  <div>
-                    <p>{rounds.find((r) => r.id === matchup.roundId).format}</p>
-                    <h3>{matchup.title}</h3>
-                    <span>{summary.status}</span>
-                  </div>
-
-                  <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
-                </button>
-              );
-            })}
+          <div className="rc-roster-card blue">
+            <div>
+              <p>Team 2</p>
+              <strong>{formatPoints(weekendScore.team2)}</strong>
+            </div>
+            <span>{[...teams[1][2], ...teams[1][3]].join(" · ")}</span>
           </div>
         </section>
       </>
