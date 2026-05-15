@@ -1390,3 +1390,399 @@ body {
     width: 100%;
   }
 }
+/* Premium Ryder/Masters-style professional polish */
+
+:root {
+  --premium-green: #062c1d;
+  --premium-green-2: #0b4a31;
+  --premium-gold: #c9a227;
+  --premium-cream: #f7f1dc;
+  --premium-card: rgba(255, 253, 243, 0.96);
+  --premium-border: rgba(201, 162, 39, 0.36);
+  --premium-text: #0b2f1f;
+  --premium-muted: #6d7059;
+}
+
+body {
+  background:
+    linear-gradient(rgba(5, 28, 18, 0.68), rgba(5, 28, 18, 0.78)),
+    url("/jack-frost-bg.png.png") center center / cover no-repeat fixed !important;
+  color: var(--premium-text) !important;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+  letter-spacing: -0.01em;
+}
+
+button,
+input,
+select {
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif !important;
+}
+
+/* Whole app spacing */
+.app {
+  max-width: 1180px !important;
+  padding: 18px !important;
+}
+
+/* Header */
+.hero {
+  background:
+    linear-gradient(135deg, rgba(6, 44, 29, 0.97), rgba(11, 74, 49, 0.94)) !important;
+  border: 1px solid rgba(201, 162, 39, 0.42) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+  padding: 24px !important;
+}
+
+.hero-left p {
+  color: var(--premium-gold) !important;
+  font-size: 12px !important;
+  letter-spacing: 1.6px !important;
+  font-weight: 900 !important;
+}
+
+.hero-left h1 {
+  color: #fff7d6 !important;
+  font-size: clamp(32px, 5vw, 54px) !important;
+  font-weight: 950 !important;
+  letter-spacing: -1.4px !important;
+}
+
+.hero-left span {
+  color: rgba(247, 241, 220, 0.78) !important;
+  font-weight: 700 !important;
+}
+
+/* Score bug */
+.scorebug {
+  background: rgba(255, 248, 220, 0.96) !important;
+  border: 1px solid rgba(201, 162, 39, 0.85) !important;
+  border-radius: 20px !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45) !important;
+  min-width: 330px !important;
+}
+
+.scorebug span {
+  color: var(--premium-green-2) !important;
+  font-weight: 950 !important;
+}
+
+.scorebug strong {
+  color: var(--premium-green) !important;
+  font-size: 48px !important;
+  font-weight: 950 !important;
+}
+
+.scorebug b {
+  color: var(--premium-gold) !important;
+}
+
+/* Live sync pill */
+.live-status {
+  background: rgba(6, 44, 29, 0.88) !important;
+  border: 1px solid rgba(201, 162, 39, 0.5) !important;
+  color: #fff7d6 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Navigation */
+.nav-tabs {
+  background: rgba(6, 44, 29, 0.92) !important;
+  border: 1px solid rgba(201, 162, 39, 0.5) !important;
+  border-radius: 18px !important;
+  padding: 7px !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18) !important;
+}
+
+.nav-tabs button {
+  min-height: 56px !important;
+  border-radius: 13px !important;
+  color: rgba(255, 248, 220, 0.82) !important;
+  font-size: 15px !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.02em !important;
+}
+
+.nav-tabs button.active {
+  background: linear-gradient(135deg, #d5b04a, #b88b1f) !important;
+  color: #062c1d !important;
+  box-shadow: 0 10px 24px rgba(201, 162, 39, 0.28) !important;
+}
+
+/* Main cards */
+.main-card,
+.entry-picker,
+.phone-scorecard,
+.scorecard-shell {
+  background: var(--premium-card) !important;
+  border: 1px solid var(--premium-border) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+/* Remove cheap/glossy feeling */
+.cup-card,
+.round-status-card,
+.matchup-card {
+  background: rgba(255, 253, 243, 0.97) !important;
+  border: 1px solid rgba(201, 162, 39, 0.32) !important;
+  box-shadow: 0 12px 30px rgba(6, 44, 29, 0.12) !important;
+}
+
+/* Section headers */
+.section-title p,
+.round-status-card p,
+.matchup-card p,
+.entry-picker p,
+.phone-card-head p {
+  color: var(--premium-green-2) !important;
+  font-weight: 950 !important;
+  letter-spacing: 1.2px !important;
+}
+
+.section-title h2,
+.group-head h3,
+.round-status-card h3,
+.matchup-card h3,
+.entry-picker h2,
+.phone-card-head h2 {
+  color: var(--premium-green) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.7px !important;
+}
+
+/* Round cards */
+.round-strip {
+  gap: 16px !important;
+}
+
+.round-status-card {
+  padding: 20px !important;
+  border-radius: 20px !important;
+}
+
+.round-status-card strong {
+  color: var(--premium-green) !important;
+  font-size: 38px !important;
+  font-weight: 950 !important;
+}
+
+.round-status-card span {
+  color: var(--premium-muted) !important;
+}
+
+/* Matchup cards */
+.matchup-card {
+  padding: 20px !important;
+  border-radius: 18px !important;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease !important;
+}
+
+.matchup-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(201, 162, 39, 0.85) !important;
+  box-shadow: 0 18px 38px rgba(6, 44, 29, 0.18) !important;
+}
+
+.matchup-card h3 {
+  font-size: 21px !important;
+}
+
+.matchup-card span {
+  color: var(--premium-muted) !important;
+  font-weight: 800 !important;
+}
+
+.matchup-card strong {
+  color: var(--premium-green) !important;
+  font-size: 36px !important;
+  font-weight: 950 !important;
+}
+
+/* Cup score block */
+.cup-team {
+  background: linear-gradient(180deg, #fffdf3, #f4ecd0) !important;
+  border: 1px solid rgba(201, 162, 39, 0.42) !important;
+  border-radius: 20px !important;
+}
+
+.cup-team span {
+  color: var(--premium-green-2) !important;
+}
+
+.cup-team strong {
+  color: var(--premium-green) !important;
+  font-weight: 950 !important;
+}
+
+.cup-team small {
+  color: var(--premium-muted) !important;
+}
+
+.cup-vs {
+  color: var(--premium-gold) !important;
+  font-weight: 950 !important;
+}
+
+/* Enter scores */
+.entry-picker label,
+.handicap-box label {
+  color: var(--premium-green-2) !important;
+  font-weight: 950 !important;
+}
+
+.entry-picker select,
+.players-grid input,
+.setup-team select,
+.handicap-box input {
+  background: rgba(255, 255, 248, 0.96) !important;
+  border: 1px solid rgba(201, 162, 39, 0.42) !important;
+  color: var(--premium-green) !important;
+  border-radius: 14px !important;
+  font-weight: 850 !important;
+}
+
+.entry-total-box {
+  background: linear-gradient(135deg, #062c1d, #0b4a31) !important;
+  border: 1px solid rgba(201, 162, 39, 0.5) !important;
+  border-radius: 18px !important;
+}
+
+.entry-total-box span,
+.entry-total-box small {
+  color: rgba(255, 248, 220, 0.78) !important;
+}
+
+.entry-total-box strong {
+  color: #fff7d6 !important;
+}
+
+.hole-row {
+  background: rgba(249, 244, 223, 0.86) !important;
+  border: 1px solid rgba(201, 162, 39, 0.3) !important;
+  border-radius: 16px !important;
+}
+
+.hole-row strong {
+  color: var(--premium-green) !important;
+}
+
+.hole-row span {
+  color: var(--premium-muted) !important;
+}
+
+.hole-row input {
+  background: white !important;
+  border: 1px solid rgba(201, 162, 39, 0.46) !important;
+  color: var(--premium-green) !important;
+}
+
+/* Scorecard detail */
+.detail-actions button {
+  background: rgba(255, 253, 243, 0.96) !important;
+  border: 1px solid rgba(201, 162, 39, 0.55) !important;
+  color: var(--premium-green) !important;
+  box-shadow: 0 10px 24px rgba(6, 44, 29, 0.12) !important;
+}
+
+.detail-hero {
+  background: linear-gradient(135deg, rgba(6, 44, 29, 0.97), rgba(11, 74, 49, 0.94)) !important;
+  border: 1px solid rgba(201, 162, 39, 0.42) !important;
+}
+
+.detail-hero p {
+  color: var(--premium-gold) !important;
+}
+
+.detail-hero h2 {
+  color: #fff7d6 !important;
+  font-weight: 950 !important;
+}
+
+.detail-score-boxes div {
+  background: rgba(255, 248, 220, 0.96) !important;
+  border: 1px solid rgba(201, 162, 39, 0.75) !important;
+}
+
+.detail-score-boxes span {
+  color: var(--premium-green-2) !important;
+}
+
+.detail-score-boxes strong {
+  color: var(--premium-green) !important;
+}
+
+/* Scorecard table */
+.scorecard th {
+  background: var(--premium-green) !important;
+  color: #fff7d6 !important;
+  border-bottom: 1px solid rgba(201, 162, 39, 0.72) !important;
+}
+
+.scorecard th.scorecard-name {
+  background: var(--premium-green) !important;
+  color: #fff7d6 !important;
+}
+
+.scorecard-name {
+  background: #fffdf3 !important;
+  color: var(--premium-green) !important;
+}
+
+.score-total {
+  background: #f4ecd0 !important;
+  color: var(--premium-green) !important;
+}
+
+.divider td {
+  background: var(--premium-green-2) !important;
+  color: #fff7d6 !important;
+}
+
+.result-row td,
+.result-row .scorecard-name {
+  background: linear-gradient(135deg, #d5b04a, #b88b1f) !important;
+  color: #062c1d !important;
+}
+
+/* Mobile cleanup */
+@media (max-width: 650px) {
+  .app {
+    padding: 10px !important;
+  }
+
+  .hero {
+    padding: 18px !important;
+    border-radius: 20px !important;
+  }
+
+  .scorebug {
+    min-width: unset !important;
+  }
+
+  .scorebug strong {
+    font-size: 38px !important;
+  }
+
+  .nav-tabs {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .nav-tabs button {
+    min-height: 54px !important;
+    font-size: 14px !important;
+  }
+
+  .matchup-card {
+    padding: 18px !important;
+  }
+
+  .matchup-card strong {
+    font-size: 32px !important;
+  }
+}
