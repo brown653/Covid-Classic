@@ -841,7 +841,10 @@ function App() {
     const full = getMatchupSegment(matchup, 1, 18);
     if (!full.holesCounted) return "Not Started";
     if (full.teamAScore === full.teamBScore) return "A/S";
-    return `${Math.abs(full.teamAScore - full.teamBScore)} UP`;
+
+    const leader = getMatchLeader(matchup);
+    const leaderLabel = leader === "team1" ? "Team 1" : "Team 2";
+    return `${leaderLabel} ${Math.abs(full.teamAScore - full.teamBScore)} UP`;
   }
 
   function getMatchLeader(matchup) {
@@ -935,7 +938,7 @@ function App() {
           <h3>{matchup.sideAPlayers.join(" / ")}</h3>
         </div>
 
-        <div className="rc-match-center">
+        <div className={`rc-match-center ${leader === "team1" ? "red-leader" : leader === "team2" ? "blue-leader" : "tie-leader"}`}>
           <p>Match {matchNumber} <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span></p>
           <strong>{resultLabel}</strong>
           <div className="rc-points-row">
