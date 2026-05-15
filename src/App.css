@@ -1081,3 +1081,229 @@ select {
     font-size: 26px !important;
   }
 }
+/* Detail page sleek cleanup - paste at the very bottom of src/App.css */
+
+:root {
+  --cc-navy: #071b36;
+  --cc-blue: #004b93;
+  --cc-red: #c90818;
+  --cc-soft: #f6f8fb;
+  --cc-line: #d8dee8;
+  --cc-text: #071b36;
+  --cc-muted: #6b7280;
+}
+
+body,
+button,
+input,
+select,
+table {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Match page buttons */
+.detail-actions {
+  max-width: 1188px !important;
+  margin: 24px auto 10px !important;
+}
+
+.detail-actions button {
+  border-radius: 12px !important;
+  padding: 11px 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+  box-shadow: 0 6px 18px rgba(7, 27, 54, 0.12) !important;
+}
+
+/* Clean professional match header - remove diagonal red block */
+.detail-hero {
+  max-width: 1188px !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) minmax(330px, 0.75fr) !important;
+  gap: 28px !important;
+  align-items: center !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid var(--cc-line) !important;
+  border-top: 8px solid var(--cc-navy) !important;
+  border-left: 0 !important;
+  border-radius: 18px 18px 0 0 !important;
+  box-shadow: 0 18px 42px rgba(7, 27, 54, 0.14) !important;
+  padding: 26px 28px !important;
+  overflow: hidden !important;
+}
+
+.detail-hero::before,
+.detail-hero::after {
+  display: none !important;
+  content: none !important;
+}
+
+.detail-hero p {
+  margin: 0 0 10px !important;
+  color: var(--cc-red) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.1px !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+.detail-hero h2 {
+  margin: 0 !important;
+  color: var(--cc-text) !important;
+  max-width: 720px !important;
+  font-size: clamp(26px, 3vw, 40px) !important;
+  line-height: 1.08 !important;
+  font-weight: 800 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.detail-hero span {
+  display: inline-flex !important;
+  align-items: center !important;
+  width: fit-content !important;
+  margin-top: 16px !important;
+  background: #eef3f8 !important;
+  color: var(--cc-navy) !important;
+  border: 1px solid var(--cc-line) !important;
+  border-radius: 999px !important;
+  padding: 8px 14px !important;
+  font-weight: 800 !important;
+  font-size: 13px !important;
+  letter-spacing: 0 !important;
+}
+
+.detail-score-boxes {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 12px !important;
+}
+
+.detail-score-boxes div {
+  background: var(--cc-soft) !important;
+  border: 1px solid var(--cc-line) !important;
+  border-radius: 16px !important;
+  padding: 15px 12px !important;
+  box-shadow: none !important;
+}
+
+.detail-score-boxes span {
+  color: var(--cc-muted) !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+}
+
+.detail-score-boxes strong {
+  color: var(--cc-navy) !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+}
+
+/* Scorecard typography and colors */
+.scorecard-shell {
+  max-width: 1188px !important;
+  border-radius: 0 0 18px 18px !important;
+  border: 1px solid var(--cc-line) !important;
+  border-top: 0 !important;
+  background: #ffffff !important;
+  box-shadow: 0 20px 50px rgba(7, 27, 54, 0.12) !important;
+}
+
+.scorecard {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+.scorecard th,
+.scorecard td {
+  border-color: #e5e9f0 !important;
+  padding: 8px 7px !important;
+}
+
+.scorecard thead th {
+  background: var(--cc-navy) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0 !important;
+}
+
+.scorecard thead tr:nth-child(2) th,
+.scorecard thead tr:nth-child(3) th,
+.scorecard thead tr:nth-child(2) .scorecard-name,
+.scorecard thead tr:nth-child(3) .scorecard-name {
+  background: #f3f6fa !important;
+  color: var(--cc-navy) !important;
+  font-weight: 700 !important;
+}
+
+.scorecard-name {
+  background: #ffffff !important;
+  color: var(--cc-navy) !important;
+  font-weight: 750 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.scorecard-name strong,
+.scorecard strong {
+  font-weight: 750 !important;
+}
+
+.divider td {
+  color: #ffffff !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  padding: 12px 16px !important;
+}
+
+.score-input {
+  height: 34px !important;
+  border-radius: 10px !important;
+  border: 1px solid #cfd6e2 !important;
+  color: var(--cc-navy) !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  background: #ffffff !important;
+}
+
+.score-input:focus {
+  border-color: var(--cc-blue) !important;
+  box-shadow: 0 0 0 3px rgba(0, 75, 147, 0.13) !important;
+}
+
+.score-total {
+  background: #f5f7fb !important;
+  color: var(--cc-navy) !important;
+  font-weight: 800 !important;
+}
+
+.result-row td,
+.result-row .scorecard-name {
+  background: var(--cc-navy) !important;
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.net-note,
+.pop-dot {
+  font-weight: 700 !important;
+  letter-spacing: 0 !important;
+}
+
+@media (max-width: 780px) {
+  .detail-hero {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    padding: 22px 18px !important;
+  }
+
+  .detail-hero h2 {
+    font-size: 27px !important;
+  }
+
+  .detail-score-boxes strong {
+    font-size: 26px !important;
+  }
+}
