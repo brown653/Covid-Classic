@@ -14,8 +14,8 @@ const defaultPlayers = [
   "Mike Paladino",
   "Kevin Gilmore",
   "Jason Spendley",
-  "Brian Riordan",
-  "Pat",
+  "Matt Brooks",
+  "Pat Lavelle",
 ];
 
 const courses = {
@@ -74,19 +74,19 @@ function App() {
       ["Al Brown", "Charles Mayer"],
       ["Mike Luddy", "Mike Paladino"],
       ["Kevin Gilmore", "Jason Spendley"],
-      ["Brian Riordan", "Pat"],
+      ["Matt Brooks", "Pat Lavelle"],
     ],
     2: [
       ["Al Brown", "Charles Mayer"],
       ["Mike Luddy", "Mike Paladino"],
       ["Kevin Gilmore", "Jason Spendley"],
-      ["Brian Riordan", "Pat"],
+      ["Matt Brooks", "Pat Lavelle"],
     ],
     3: [
       ["Al Brown", "Kevin Gilmore"],
       ["Charles Mayer", "Jason Spendley"],
-      ["Mike Luddy", "Brian Riordan"],
-      ["Mike Paladino", "Pat"],
+      ["Mike Luddy", "Matt Brooks"],
+      ["Mike Paladino", "Pat Lavelle"],
     ],
   });
 
