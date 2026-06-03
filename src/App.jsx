@@ -29,23 +29,56 @@ const PLAYER_PHOTOS = {
   "Pat Lavelle": "/avatars/pat-lavelle.jpg",
 };
 
-const courses = {
-  jackFrost: {
-    name: "Jack Frost National",
-    par: [4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 3, 5, 4, 4, 4, 3, 4, 5],
-    hcp: [11, 5, 17, 7, 15, 3, 9, 13, 1, 8, 18, 2, 10, 6, 14, 16, 12, 4],
-  },
-  ballyowen: {
-    name: "Ballyowen",
-    par: [4, 4, 5, 3, 5, 3, 4, 4, 4, 5, 3, 4, 4, 4, 3, 4, 5, 4],
-    hcp: [13, 11, 3, 17, 5, 15, 1, 7, 9, 12, 18, 14, 8, 4, 16, 2, 10, 6],
+const JACK_FROST = {
+  name: "Jack Frost National",
+  par: [4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 3, 5, 4, 4, 4, 3, 4, 5],
+  hcp: [11, 5, 17, 7, 15, 3, 9, 13, 1, 8, 18, 2, 10, 6, 14, 16, 12, 4],
+};
+
+const DEFAULT_SPLIT_ROCK = {
+  frontNineKey: "A",
+  backNineKey: "B",
+  nines: {
+    A: {
+      name: "Split Rock Nine A",
+      par: [4, 4, 3, 4, 5, 4, 3, 4, 5],
+      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    },
+    B: {
+      name: "Split Rock Nine B",
+      par: [4, 5, 4, 3, 4, 4, 5, 3, 4],
+      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    },
+    C: {
+      name: "Split Rock Nine C",
+      par: [5, 4, 4, 3, 4, 5, 4, 3, 4],
+      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
+    },
   },
 };
 
 const rounds = [
-  { id: 1, name: "Round 1", shortName: "R1", courseKey: "jackFrost", format: "Best Ball Stableford" },
-  { id: 2, name: "Round 2", shortName: "R2", courseKey: "jackFrost", format: "2-Man Scramble" },
-  { id: 3, name: "Round 3", shortName: "R3", courseKey: "ballyowen", format: "Singles Matches" },
+  {
+    id: 1,
+    name: "Saturday AM",
+    shortName: "SAT AM",
+    courseKey: "jackFrost",
+    format: "Best Ball Stableford",
+  },
+  {
+    id: 2,
+    name: "Saturday PM",
+    shortName: "SAT PM",
+    courseKey: "splitRock",
+    format: "2-Man Scramble",
+  },
+  {
+    id: 3,
+    name: "Sunday AM",
+    shortName: "SUN AM",
+    courseKey: "jackFrost",
+    format: "Singles Matches",
+  },
 ];
 
 const RACE_TO = 6.5;
@@ -70,6 +103,15 @@ function formatPoints(value) {
   return Number.isInteger(value) ? value : value.toFixed(1);
 }
 
+function parseNineNumbers(value, fallback) {
+  const parsed = String(value)
+    .split(",")
+    .map((item) => Number(item.trim()))
+    .filter((item) => !Number.isNaN(item));
+
+  return parsed.length === 9 ? parsed : fallback;
+}
+
 function App() {
   const [players, setPlayers] = useState(defaultPlayers);
   const [activeTab, setActiveTab] = useState("home");
@@ -79,6 +121,7 @@ function App() {
   const [scores, setScores] = useState({});
   const [handicaps, setHandicaps] = useState({});
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+  const [splitRockSetup, setSplitRockSetup] = useState(DEFAULT_SPLIT_ROCK);
 
   const [teams, setTeams] = useState({
     1: [
@@ -191,6 +234,27 @@ function App() {
     };
   }, []);
 
+  function getRound(roundId) {
+    return rounds.find((round) => round.id === roundId);
+  }
+
+  function getCourse(roundId) {
+    const round = getRound(roundId);
+
+    if (round.courseKey === "jackFrost") {
+      return JACK_FROST;
+    }
+
+    const front = splitRockSetup.nines[splitRockSetup.frontNineKey];
+    const back = splitRockSetup.nines[splitRockSetup.backNineKey];
+
+    return {
+      name: `Split Rock Golf Club (${front.name} / ${back.name})`,
+      par: [...front.par, ...back.par],
+      hcp: [...front.hcp, ...back.hcp],
+    };
+  }
+
   function getScore(roundId, player, holeNumber) {
     return scores?.[roundId]?.[player]?.[holeNumber] || "";
   }
@@ -275,14 +339,6 @@ function App() {
     }));
   }
 
-  function getRound(roundId) {
-    return rounds.find((round) => round.id === roundId);
-  }
-
-  function getCourse(roundId) {
-    return courses[getRound(roundId).courseKey];
-  }
-
   function handicapApplies(roundId) {
     return roundId === 1 || roundId === 3;
   }
@@ -338,8 +394,10 @@ function App() {
     let teamBScore = 0;
     let holesCounted = 0;
 
+    const course = getCourse(1);
+
     for (let hole = start; hole <= end; hole++) {
-      const par = courses.jackFrost.par[hole - 1];
+      const par = course.par[hole - 1];
       const teamAHasScore = teamA.some((player) => hasScore(1, player, hole));
       const teamBHasScore = teamB.some((player) => hasScore(1, player, hole));
 
@@ -464,45 +522,6 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function getTeamPairMatchesForRound(roundId) {
-    return [
-      [teams[roundId][0], teams[roundId][2]],
-      [teams[roundId][1], teams[roundId][3]],
-    ];
-  }
-
-  function getPairMatchSegmentForRound(roundId, pairA, pairB, start, end) {
-    if (roundId === 1) return getStablefordSegment(pairA, pairB, start, end);
-    return getScramblePairSegment(pairA, pairB, start, end);
-  }
-
-  function awardLivePoint(segment, pointValue = 1) {
-    if (!segment.holesCounted) return [0, 0];
-
-    if (segment.teamAScore === segment.teamBScore) return [pointValue / 2, pointValue / 2];
-
-    if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore ? [pointValue, 0] : [0, pointValue];
-    }
-
-    return segment.teamAScore < segment.teamBScore ? [pointValue, 0] : [0, pointValue];
-  }
-
-  function getSegmentStatus(segment, labelA = "Team 1", labelB = "Team 2") {
-    if (!segment.holesCounted) return "Not Started";
-    if (segment.teamAScore === segment.teamBScore) return "Tied";
-
-    if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore
-        ? `${labelA} leads`
-        : `${labelB} leads`;
-    }
-
-    return segment.teamAScore < segment.teamBScore
-      ? `${labelA} leads`
-      : `${labelB} leads`;
-  }
-
   function getRoundOverallSegments(roundId) {
     if (roundId === 1) {
       return {
@@ -527,6 +546,20 @@ function App() {
     };
   }
 
+  function awardLivePoint(segment, pointValue = 1) {
+    if (!segment.holesCounted) return [0, 0];
+
+    if (segment.teamAScore === segment.teamBScore) {
+      return [pointValue / 2, pointValue / 2];
+    }
+
+    if (segment.higherIsBetter) {
+      return segment.teamAScore > segment.teamBScore ? [pointValue, 0] : [0, pointValue];
+    }
+
+    return segment.teamAScore < segment.teamBScore ? [pointValue, 0] : [0, pointValue];
+  }
+
   function getRoundCupPoints(roundId) {
     const segments = getRoundOverallSegments(roundId);
 
@@ -540,9 +573,24 @@ function App() {
     };
   }
 
+  function getSegmentStatus(segment, labelA = "Team 1", labelB = "Team 2") {
+    if (!segment.holesCounted) return "Not Started";
+    if (segment.teamAScore === segment.teamBScore) return "Tied";
+
+    if (segment.higherIsBetter) {
+      return segment.teamAScore > segment.teamBScore
+        ? `${labelA} leads`
+        : `${labelB} leads`;
+    }
+
+    return segment.teamAScore < segment.teamBScore
+      ? `${labelA} leads`
+      : `${labelB} leads`;
+  }
+
   function getSegmentWinnerLabel(segment) {
     if (!segment.holesCounted) return "Not Started";
-    if (segment.teamAScore === segment.teamBScore) return "A/S";
+    if (segment.teamAScore === segment.teamBScore) return "Halved";
 
     if (segment.higherIsBetter) {
       return segment.teamAScore > segment.teamBScore ? "Team 1" : "Team 2";
@@ -553,11 +601,11 @@ function App() {
 
   const roundSegments = useMemo(() => {
     return {
-      1: { ...getRoundOverallSegments(1), label: "Round 1", format: "Stableford" },
-      2: { ...getRoundOverallSegments(2), label: "Round 2", format: "Scramble" },
-      3: { ...getRoundOverallSegments(3), label: "Round 3", format: "Singles" },
+      1: { ...getRoundOverallSegments(1), label: "Saturday AM", format: "Stableford" },
+      2: { ...getRoundOverallSegments(2), label: "Saturday PM", format: "Scramble" },
+      3: { ...getRoundOverallSegments(3), label: "Sunday AM", format: "Singles" },
     };
-  }, [scores, teams, handicaps]);
+  }, [scores, teams, handicaps, splitRockSetup]);
 
   const weekendScore = useMemo(() => {
     const round1 = getRoundCupPoints(1);
@@ -568,14 +616,14 @@ function App() {
       team1: round1.team1 + round2.team1 + round3.team1,
       team2: round1.team2 + round2.team2 + round3.team2,
     };
-  }, [scores, teams, handicaps]);
+  }, [scores, teams, handicaps, splitRockSetup]);
 
   const matchupGroups = useMemo(() => {
     return [
       {
         roundId: 1,
-        title: "Round 1",
-        subtitle: "Best Ball Stableford",
+        title: "Saturday AM",
+        subtitle: "Jack Frost • Best Ball Stableford",
         items: [
           {
             id: "stableford-1",
@@ -601,8 +649,8 @@ function App() {
       },
       {
         roundId: 2,
-        title: "Round 2",
-        subtitle: "2-Man Scramble",
+        title: "Saturday PM",
+        subtitle: "Split Rock • 2-Man Scramble",
         items: [
           {
             id: "scramble-1",
@@ -628,8 +676,8 @@ function App() {
       },
       {
         roundId: 3,
-        title: "Round 3",
-        subtitle: "Singles Matches",
+        title: "Sunday AM",
+        subtitle: "Jack Frost • Singles",
         items: teams[3].map((match, index) => ({
           id: `singles-${index + 1}`,
           roundId: 3,
@@ -645,9 +693,7 @@ function App() {
   }, [teams]);
 
   const flatMatchups = matchupGroups.flatMap((group) => group.items);
-  const selectedMatchup = flatMatchups.find(
-    (matchup) => matchup.id === selectedMatchupId
-  );
+  const selectedMatchup = flatMatchups.find((matchup) => matchup.id === selectedMatchupId);
 
   function getMatchupSegment(matchup, start, end) {
     if (matchup.type === "stableford") {
@@ -740,6 +786,45 @@ function App() {
     });
   }
 
+  function updateSplitRockNineName(key, value) {
+    setSplitRockSetup((prev) => ({
+      ...prev,
+      nines: {
+        ...prev.nines,
+        [key]: {
+          ...prev.nines[key],
+          name: value,
+        },
+      },
+    }));
+  }
+
+  function updateSplitRockNinePar(key, value) {
+    setSplitRockSetup((prev) => ({
+      ...prev,
+      nines: {
+        ...prev.nines,
+        [key]: {
+          ...prev.nines[key],
+          par: parseNineNumbers(value, prev.nines[key].par),
+        },
+      },
+    }));
+  }
+
+  function updateSplitRockNineHcp(key, value) {
+    setSplitRockSetup((prev) => ({
+      ...prev,
+      nines: {
+        ...prev.nines,
+        [key]: {
+          ...prev.nines[key],
+          hcp: parseNineNumbers(value, prev.nines[key].hcp),
+        },
+      },
+    }));
+  }
+
   function renderScorecardRow(roundId, player) {
     const front = getPlayerTotal(roundId, player, 1, 9);
     const back = getPlayerTotal(roundId, player, 10, 18);
@@ -768,7 +853,9 @@ function App() {
               }
             />
             {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">{getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}</span>
+              <span className="pop-star" aria-label="Handicap stroke">
+                {getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}
+              </span>
             )}
           </td>
         ))}
@@ -787,7 +874,9 @@ function App() {
               }
             />
             {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">{getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}</span>
+              <span className="pop-star" aria-label="Handicap stroke">
+                {getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}
+              </span>
             )}
           </td>
         ))}
@@ -1091,7 +1180,7 @@ function App() {
 
   function EnterScoresView() {
     const round = rounds.find((item) => item.id === selectedRoundId);
-    const course = courses[round.courseKey];
+    const course = getCourse(selectedRoundId);
     const scoringPlayer = getScoringPlayerForRound(selectedRoundId, selectedPlayer);
     const scoreLabel = getScoreEntryLabel(selectedRoundId, selectedPlayer);
 
@@ -1282,6 +1371,94 @@ function App() {
           <div className="section-title">
             <div>
               <p>Setup</p>
+              <h2>Split Rock Routing</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            <div className="setup-team">
+              <strong>Front 9</strong>
+              <select
+                value={splitRockSetup.frontNineKey}
+                onChange={(event) =>
+                  setSplitRockSetup((prev) => ({
+                    ...prev,
+                    frontNineKey: event.target.value,
+                  }))
+                }
+              >
+                <option value="A">{splitRockSetup.nines.A.name}</option>
+                <option value="B">{splitRockSetup.nines.B.name}</option>
+                <option value="C">{splitRockSetup.nines.C.name}</option>
+              </select>
+            </div>
+
+            <div className="setup-team">
+              <strong>Back 9</strong>
+              <select
+                value={splitRockSetup.backNineKey}
+                onChange={(event) =>
+                  setSplitRockSetup((prev) => ({
+                    ...prev,
+                    backNineKey: event.target.value,
+                  }))
+                }
+              >
+                <option value="A">{splitRockSetup.nines.A.name}</option>
+                <option value="B">{splitRockSetup.nines.B.name}</option>
+                <option value="C">{splitRockSetup.nines.C.name}</option>
+              </select>
+            </div>
+          </div>
+
+          <p className="setup-note">
+            Set the two nines you actually play for Saturday PM. The unselected nine is ignored.
+          </p>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Split Rock Nines</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            {["A", "B", "C"].map((key) => (
+              <div className="setup-round" key={key}>
+                <h3>Nine {key}</h3>
+
+                <label style={{ display: "block", marginBottom: "8px" }}>Name</label>
+                <input
+                  value={splitRockSetup.nines[key].name}
+                  onChange={(event) => updateSplitRockNineName(key, event.target.value)}
+                />
+
+                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
+                  Pars (comma separated, 9 values)
+                </label>
+                <input
+                  value={splitRockSetup.nines[key].par.join(", ")}
+                  onChange={(event) => updateSplitRockNinePar(key, event.target.value)}
+                />
+
+                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
+                  Handicaps (comma separated, 9 values)
+                </label>
+                <input
+                  value={splitRockSetup.nines[key].hcp.join(", ")}
+                  onChange={(event) => updateSplitRockNineHcp(key, event.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
               <h2>Teams & Matches</h2>
             </div>
           </div>
@@ -1330,7 +1507,7 @@ function App() {
   function ScorecardView() {
     const matchup = selectedMatchup;
     const round = rounds.find((item) => item.id === matchup.roundId);
-    const course = courses[round.courseKey];
+    const course = getCourse(matchup.roundId);
     const summary = getMatchupSummary(matchup);
     const detailLeader = getMatchLeader(matchup);
 
