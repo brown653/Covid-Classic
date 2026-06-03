@@ -1009,25 +1009,97 @@ function App() {
   }
 
   function renderScrambleRow(pair, opponentPair, sideKey) {
-    const scoringPlayer = pair[0];
-    let grossFront = 0;
-    let grossBack = 0;
-    let netFront = 0;
-    let netBack = 0;
+  const scoringPlayer = pair[0];
+  let grossFront = 0;
+  let grossBack = 0;
+  let netFront = 0;
+  let netBack = 0;
 
-    for (let hole = 1; hole <= 9; hole++) {
-      const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-      const net = gross ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) : 0;
-      grossFront += gross;
-      netFront += net;
-    }
+  return (
+    <tr key={pair.join("-")}>
+      <td className="scorecard-name">
+        {pair.join(" / ")}
+        <small className="net-note">
+          Net{" "}
+          {(() => {
+            let grossTotal = 0;
+            let netTotal = 0;
 
-    for (let hole = 10; hole <= 18; hole++) {
-      const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-      const net = gross ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) : 0;
-      grossBack += gross;
-      netBack += net;
-    }
+            for (let hole = 1; hole <= 18; hole++) {
+              const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+              const net = gross
+                ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole)
+                : 0;
+              grossTotal += gross;
+              netTotal += net;
+            }
+
+            return netTotal || "-";
+          })()}
+        </small>
+      </td>
+
+      {FRONT_HOLES.map((hole) => {
+        const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+        const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
+        const net = gross ? gross - stroke : 0;
+        grossFront += gross;
+        netFront += net;
+
+        return (
+          <td key={hole}>
+            <input
+              className="score-input"
+              type="number"
+              min="1"
+              value={getScore(2, scoringPlayer, hole)}
+              onChange={(event) =>
+                updateScore(2, scoringPlayer, hole, event.target.value)
+              }
+            />
+            {stroke > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">
+                *
+              </span>
+            )}
+          </td>
+        );
+      })}
+
+      <td className="score-total">{`${grossFront || "-"} / ${netFront || "-"}`}</td>
+
+      {BACK_HOLES.map((hole) => {
+        const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+        const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
+        const net = gross ? gross - stroke : 0;
+        grossBack += gross;
+        netBack += net;
+
+        return (
+          <td key={hole}>
+            <input
+              className="score-input"
+              type="number"
+              min="1"
+              value={getScore(2, scoringPlayer, hole)}
+              onChange={(event) =>
+                updateScore(2, scoringPlayer, hole, event.target.value)
+              }
+            />
+            {stroke > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">
+                *
+              </span>
+            )}
+          </td>
+        );
+      })}
+
+      <td className="score-total">{`${grossBack || "-"} / ${netBack || "-"}`}</td>
+      <td className="score-total">{`${grossFront + grossBack || "-"} / ${netFront + netBack || "-"}`}</td>
+    </tr>
+  );
+}
 
     const grossTotal = grossFront + grossBack;
     const netTotal = netFront + netBack;
