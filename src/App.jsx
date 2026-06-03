@@ -348,10 +348,6 @@ function App() {
     }));
   }
 
-  function handicapApplies(roundId) {
-    return roundId === 1 || roundId === 3;
-  }
-
   function getStablefordHoleStrokes(player, holeNumber) {
     const totalStrokes = Number(handicaps[player] || 0);
     if (!totalStrokes) return 0;
@@ -389,8 +385,12 @@ function App() {
   }
 
   function getScrambleMatchStrokeInfo(pairA, pairB) {
-    const teamAHcp = roundHalfUp(((Number(handicaps[pairA[0]] || 0) + Number(handicaps[pairA[1]] || 0)) * 0.25));
-    const teamBHcp = roundHalfUp(((Number(handicaps[pairB[0]] || 0) + Number(handicaps[pairB[1]] || 0)) * 0.25));
+    const teamAHcp = roundHalfUp(
+      (Number(handicaps[pairA[0]] || 0) + Number(handicaps[pairA[1]] || 0)) * 0.25
+    );
+    const teamBHcp = roundHalfUp(
+      (Number(handicaps[pairB[0]] || 0) + Number(handicaps[pairB[1]] || 0)) * 0.25
+    );
 
     if (teamAHcp === teamBHcp) {
       return {
@@ -860,6 +860,36 @@ function App() {
     });
   }
 
+  function getTeamRosters() {
+    return {
+      team1: [...teams[1][0], ...teams[1][1]],
+      team2: [...teams[1][2], ...teams[1][3]],
+    };
+  }
+
+  function updateTeamRoster(teamName, slotIndex, value) {
+    const rosters = getTeamRosters();
+
+    const nextTeam1 = [...rosters.team1];
+    const nextTeam2 = [...rosters.team2];
+
+    if (teamName === "team1") {
+      nextTeam1[slotIndex] = value;
+    } else {
+      nextTeam2[slotIndex] = value;
+    }
+
+    setTeams((previousTeams) => ({
+      ...previousTeams,
+      1: [
+        [nextTeam1[0], nextTeam1[1]],
+        [nextTeam1[2], nextTeam1[3]],
+        [nextTeam2[0], nextTeam2[1]],
+        [nextTeam2[2], nextTeam2[3]],
+      ],
+    }));
+  }
+
   function updateSplitRockNineName(key, value) {
     setSplitRockSetup((prev) => ({
       ...prev,
@@ -917,7 +947,7 @@ function App() {
 
     const netFront = getPlayerTotal(roundId, player, 1, 9, true, context);
     const netBack = getPlayerTotal(roundId, player, 10, 18, true, context);
-    const showNet = handicapApplies(roundId);
+    const showNet = roundId === 1 || roundId === 3;
 
     return (
       <tr key={player}>
@@ -1446,6 +1476,8 @@ function App() {
   }
 
   function SetupView() {
+    const rosters = getTeamRosters();
+
     return (
       <>
         <section className="main-card">
@@ -1492,6 +1524,55 @@ function App() {
                 onChange={(event) => updatePlayer(index, event.target.value)}
               />
             ))}
+          </div>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>4-Person Teams</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            <div className="setup-round">
+              <h3>Team 1</h3>
+              <div className="players-grid">
+                {rosters.team1.map((player, index) => (
+                  <select
+                    key={`team1-${index}`}
+                    value={player}
+                    onChange={(event) => updateTeamRoster("team1", index, event.target.value)}
+                  >
+                    {players.map((playerOption) => (
+                      <option key={playerOption} value={playerOption}>
+                        {playerOption}
+                      </option>
+                    ))}
+                  </select>
+                ))}
+              </div>
+            </div>
+
+            <div className="setup-round">
+              <h3>Team 2</h3>
+              <div className="players-grid">
+                {rosters.team2.map((player, index) => (
+                  <select
+                    key={`team2-${index}`}
+                    value={player}
+                    onChange={(event) => updateTeamRoster("team2", index, event.target.value)}
+                  >
+                    {players.map((playerOption) => (
+                      <option key={playerOption} value={playerOption}>
+                        {playerOption}
+                      </option>
+                    ))}
+                  </select>
+                ))}
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1587,52 +1668,7 @@ function App() {
           <div className="section-title">
             <div>
               <p>Setup</p>
-              <h2>Scramble Drive Minimums</h2>
-            </div>
-          </div>
-
-          <div className="setup-grid">
-            {[0, 1].map((pairIndex) => (
-              <div className="setup-round" key={pairIndex}>
-                <h3>Scramble Match {pairIndex + 1}</h3>
-                <span>{teams[2][pairIndex].join(" / ")} vs {teams[2][pairIndex + 2].join(" / ")}</span>
-
-                <div className="players-grid" style={{ marginTop: "12px" }}>
-                  <div className="handicap-box">
-                    <label>{teams[2][pairIndex][0]} drives used</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="18"
-                      value={scrambleDriveCounts[String(pairIndex)].a}
-                      onChange={(event) => updateDriveCount(String(pairIndex), "a", event.target.value)}
-                    />
-                  </div>
-                  <div className="handicap-box">
-                    <label>{teams[2][pairIndex][1]} drives used</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="18"
-                      value={scrambleDriveCounts[String(pairIndex)].b}
-                      onChange={(event) => updateDriveCount(String(pairIndex), "b", event.target.value)}
-                    />
-                  </div>
-                </div>
-
-                <p className="setup-note" style={{ marginTop: "10px" }}>
-                  Minimum 6 each — currently {scrambleDriveCounts[String(pairIndex)].a >= 6 ? "✓" : "✗"} / {scrambleDriveCounts[String(pairIndex)].b >= 6 ? "✓" : "✗"}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="main-card">
-          <div className="section-title">
-            <div>
-              <p>Setup</p>
-              <h2>Teams & Matches</h2>
+              <h2>Round Matchups</h2>
             </div>
           </div>
 
@@ -1663,7 +1699,9 @@ function App() {
                         }
                       >
                         {players.map((playerOption) => (
-                          <option key={playerOption} value={playerOption}>{playerOption}</option>
+                          <option key={playerOption} value={playerOption}>
+                            {playerOption}
+                          </option>
                         ))}
                       </select>
                     ))}
@@ -1701,6 +1739,9 @@ function App() {
       matchup.type === "scramble" && matchup.pairIndex !== undefined
         ? scrambleDriveCounts[String(matchup.pairIndex)]
         : null;
+
+    const driveAComplete = driveInfo ? driveInfo.a >= 6 : false;
+    const driveBComplete = driveInfo ? driveInfo.b >= 6 : false;
 
     return (
       <>
@@ -1747,23 +1788,82 @@ function App() {
         </section>
 
         {matchup.type === "scramble" && scrambleInfo && (
-          <section className="main-card" style={{ marginTop: "14px" }}>
-            <div className="section-title">
-              <div>
-                <p>Scramble Rules</p>
-                <h2>Handicap & Drive Tracker</h2>
+          <>
+            <section className="main-card" style={{ marginTop: "14px" }}>
+              <div className="section-title">
+                <div>
+                  <p>Scramble Rules</p>
+                  <h2>Handicap</h2>
+                </div>
               </div>
-            </div>
-            <p>
-              Team 1 handicap: <strong>{scrambleInfo.teamAHcp}</strong> · Team 2 handicap: <strong>{scrambleInfo.teamBHcp}</strong> ·
-              Strokes applied: <strong>{scrambleInfo.strokes}</strong> to <strong>{scrambleInfo.receiver === "A" ? "Team 1" : scrambleInfo.receiver === "B" ? "Team 2" : "Neither Team"}</strong>
-            </p>
-            {driveInfo && (
               <p>
-                Drive minimums — {matchup.sideAPlayers[0]}: <strong>{driveInfo.a}</strong>, {matchup.sideAPlayers[1]}: <strong>{driveInfo.b}</strong>
+                Team 1 handicap: <strong>{scrambleInfo.teamAHcp}</strong> · Team 2 handicap: <strong>{scrambleInfo.teamBHcp}</strong> ·
+                Strokes applied: <strong>{scrambleInfo.strokes}</strong> to{" "}
+                <strong>
+                  {scrambleInfo.receiver === "A"
+                    ? "Team 1"
+                    : scrambleInfo.receiver === "B"
+                    ? "Team 2"
+                    : "Neither Team"}
+                </strong>
               </p>
-            )}
-          </section>
+            </section>
+
+            <section className="main-card" style={{ marginTop: "14px" }}>
+              <div className="section-title">
+                <div>
+                  <p>Scramble Drives</p>
+                  <h2>Drive Tracker</h2>
+                </div>
+              </div>
+
+              <div className="players-grid">
+                <div
+                  className="handicap-box"
+                  style={{
+                    border: driveAComplete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
+                    borderRadius: "12px",
+                    padding: "12px",
+                    background: driveAComplete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
+                  }}
+                >
+                  <label>{matchup.sideAPlayers[0]} drives used</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="18"
+                    value={driveInfo?.a || 0}
+                    onChange={(event) => updateDriveCount(String(matchup.pairIndex), "a", event.target.value)}
+                  />
+                  <p style={{ margin: "8px 0 0", fontWeight: 800, color: driveAComplete ? "#0c6a36" : "#a3162d" }}>
+                    {driveAComplete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(driveInfo?.a || 0))} more`}
+                  </p>
+                </div>
+
+                <div
+                  className="handicap-box"
+                  style={{
+                    border: driveBComplete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
+                    borderRadius: "12px",
+                    padding: "12px",
+                    background: driveBComplete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
+                  }}
+                >
+                  <label>{matchup.sideAPlayers[1]} drives used</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="18"
+                    value={driveInfo?.b || 0}
+                    onChange={(event) => updateDriveCount(String(matchup.pairIndex), "b", event.target.value)}
+                  />
+                  <p style={{ margin: "8px 0 0", fontWeight: 800, color: driveBComplete ? "#0c6a36" : "#a3162d" }}>
+                    {driveBComplete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(driveInfo?.b || 0))} more`}
+                  </p>
+                </div>
+              </div>
+            </section>
+          </>
         )}
 
         {matchup.type === "singles" && singlesInfo && (
