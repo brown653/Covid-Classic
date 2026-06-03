@@ -48,8 +48,8 @@ const rounds = [
   { id: 3, name: "Round 3", shortName: "R3", courseKey: "ballyowen", format: "Singles Matches" },
 ];
 
-const RACE_TO = 12.5;
-const TOTAL_WEEKEND_POINTS = 24;
+const RACE_TO = 6.5;
+const TOTAL_WEEKEND_POINTS = 12;
 
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -476,16 +476,16 @@ function App() {
     return getScramblePairSegment(pairA, pairB, start, end);
   }
 
-  function awardLivePoint(segment) {
+  function awardLivePoint(segment, pointValue = 1) {
     if (!segment.holesCounted) return [0, 0];
 
-    if (segment.teamAScore === segment.teamBScore) return [0.5, 0.5];
+    if (segment.teamAScore === segment.teamBScore) return [pointValue / 2, pointValue / 2];
 
     if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore ? [1, 0] : [0, 1];
+      return segment.teamAScore > segment.teamBScore ? [pointValue, 0] : [0, pointValue];
     }
 
-    return segment.teamAScore < segment.teamBScore ? [1, 0] : [0, 1];
+    return segment.teamAScore < segment.teamBScore ? [pointValue, 0] : [0, pointValue];
   }
 
   function getSegmentStatus(segment, labelA = "Team 1", labelB = "Team 2") {
@@ -503,64 +503,72 @@ function App() {
       : `${labelB} leads`;
   }
 
-  const roundSegments = useMemo(() => {
-    const roundOne = {
-      front: getStablefordSideSegment(1, 9),
-      back: getStablefordSideSegment(10, 18),
-      full: getStablefordSideSegment(1, 18),
-    };
+  function getRoundOverallSegments(roundId) {
+    if (roundId === 1) {
+      return {
+        front: getStablefordSideSegment(1, 9),
+        back: getStablefordSideSegment(10, 18),
+        full: getStablefordSideSegment(1, 18),
+      };
+    }
 
-    const roundTwo = {
-      front: getScrambleSideSegment(1, 9),
-      back: getScrambleSideSegment(10, 18),
-      full: getScrambleSideSegment(1, 18),
-    };
+    if (roundId === 2) {
+      return {
+        front: getScrambleSideSegment(1, 9),
+        back: getScrambleSideSegment(10, 18),
+        full: getScrambleSideSegment(1, 18),
+      };
+    }
 
-    const roundThree = {
+    return {
       front: getSinglesSideSegment(1, 9),
       back: getSinglesSideSegment(10, 18),
       full: getSinglesSideSegment(1, 18),
     };
+  }
+
+  function getRoundCupPoints(roundId) {
+    const segments = getRoundOverallSegments(roundId);
+
+    const frontPoints = awardLivePoint(segments.front, 1);
+    const backPoints = awardLivePoint(segments.back, 1);
+    const fullPoints = awardLivePoint(segments.full, 2);
 
     return {
-      1: { ...roundOne, label: "Round 1", format: "Stableford" },
-      2: { ...roundTwo, label: "Round 2", format: "Scramble" },
-      3: { ...roundThree, label: "Round 3", format: "Singles" },
+      team1: frontPoints[0] + backPoints[0] + fullPoints[0],
+      team2: frontPoints[1] + backPoints[1] + fullPoints[1],
+    };
+  }
+
+  function getSegmentWinnerLabel(segment) {
+    if (!segment.holesCounted) return "Not Started";
+    if (segment.teamAScore === segment.teamBScore) return "A/S";
+
+    if (segment.higherIsBetter) {
+      return segment.teamAScore > segment.teamBScore ? "Team 1" : "Team 2";
+    }
+
+    return segment.teamAScore < segment.teamBScore ? "Team 1" : "Team 2";
+  }
+
+  const roundSegments = useMemo(() => {
+    return {
+      1: { ...getRoundOverallSegments(1), label: "Round 1", format: "Stableford" },
+      2: { ...getRoundOverallSegments(2), label: "Round 2", format: "Scramble" },
+      3: { ...getRoundOverallSegments(3), label: "Round 3", format: "Singles" },
     };
   }, [scores, teams, handicaps]);
 
   const weekendScore = useMemo(() => {
-    let team1 = 0;
-    let team2 = 0;
+    const round1 = getRoundCupPoints(1);
+    const round2 = getRoundCupPoints(2);
+    const round3 = getRoundCupPoints(3);
 
-    [1, 2].forEach((roundId) => {
-      getTeamPairMatchesForRound(roundId).forEach(([pairA, pairB]) => {
-        [
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 9),
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 10, 18),
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 18),
-        ].forEach((segment) => {
-          const points = awardLivePoint(segment);
-          team1 += points[0];
-          team2 += points[1];
-        });
-      });
-    });
-
-    teams[3].forEach((match) => {
-      [
-        getSinglesMatchSegment(match, 1, 9),
-        getSinglesMatchSegment(match, 10, 18),
-        getSinglesMatchSegment(match, 1, 18),
-      ].forEach((segment) => {
-        const points = awardLivePoint(segment);
-        team1 += points[0];
-        team2 += points[1];
-      });
-    });
-
-    return { team1, team2 };
-  }, [roundSegments, scores, teams, handicaps]);
+    return {
+      team1: round1.team1 + round2.team1 + round3.team1,
+      team2: round1.team2 + round2.team2 + round3.team2,
+    };
+  }, [scores, teams, handicaps]);
 
   const matchupGroups = useMemo(() => {
     return [
@@ -836,40 +844,6 @@ function App() {
     );
   }
 
-  function getRoundCupPoints(roundId) {
-    let team1 = 0;
-    let team2 = 0;
-
-    if (roundId === 1 || roundId === 2) {
-      getTeamPairMatchesForRound(roundId).forEach(([pairA, pairB]) => {
-        [
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 9),
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 10, 18),
-          getPairMatchSegmentForRound(roundId, pairA, pairB, 1, 18),
-        ].forEach((segment) => {
-          const points = awardLivePoint(segment);
-          team1 += points[0];
-          team2 += points[1];
-        });
-      });
-      return { team1, team2 };
-    }
-
-    teams[3].forEach((match) => {
-      [
-        getSinglesMatchSegment(match, 1, 9),
-        getSinglesMatchSegment(match, 10, 18),
-        getSinglesMatchSegment(match, 1, 18),
-      ].forEach((segment) => {
-        const points = awardLivePoint(segment);
-        team1 += points[0];
-        team2 += points[1];
-      });
-    });
-
-    return { team1, team2 };
-  }
-
   function getMatchResultLabel(matchup) {
     const full = getMatchupSegment(matchup, 1, 18);
     if (!full.holesCounted) return "Not Started";
@@ -885,11 +859,6 @@ function App() {
     if (!full.holesCounted || full.teamAScore === full.teamBScore) return "tie";
     if (full.higherIsBetter) return full.teamAScore > full.teamBScore ? "team1" : "team2";
     return full.teamAScore < full.teamBScore ? "team1" : "team2";
-  }
-
-  function getSegmentPointLabel(segment) {
-    const points = awardLivePoint(segment);
-    return `${formatPoints(points[0])}-${formatPoints(points[1])}`;
   }
 
   function getPlayerInitials(player) {
@@ -942,7 +911,7 @@ function App() {
     return (
       <div className="rc-page">
         <div className="rc-topline">
-          <div className="rc-brand">COVID CLASSIC</div>
+          <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
           <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
             {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
           </div>
@@ -1008,9 +977,9 @@ function App() {
           <p>Match {matchNumber} <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span></p>
           <strong>{resultLabel}</strong>
           <div className="rc-points-row">
-            <span>Front {getSegmentPointLabel(summary.front)}</span>
-            <span>Back {getSegmentPointLabel(summary.back)}</span>
-            <span>Total {getSegmentPointLabel(summary.full)}</span>
+            <span>Front 9: {getSegmentWinnerLabel(summary.front)}</span>
+            <span>Back 9: {getSegmentWinnerLabel(summary.back)}</span>
+            <span>18 Holes: {getSegmentWinnerLabel(summary.full)}</span>
           </div>
         </div>
 
@@ -1065,6 +1034,9 @@ function App() {
             <div>
               <p>Current Round Live Score</p>
               <h2>{currentGroup.title} — {currentGroup.subtitle}</h2>
+              <p style={{ marginTop: "8px", letterSpacing: "normal", textTransform: "none" }}>
+                Scoring: Front 9 = 1 point · Back 9 = 1 point · 18 Holes = 2 points
+              </p>
             </div>
             <div className="rc-session-score">
               {formatPoints(currentRoundPoints.team1)} - {formatPoints(currentRoundPoints.team2)}
