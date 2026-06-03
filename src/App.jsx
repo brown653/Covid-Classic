@@ -35,26 +35,10 @@ const JACK_FROST = {
   hcp: [11, 5, 17, 7, 15, 3, 9, 13, 1, 8, 18, 2, 10, 6, 14, 16, 12, 4],
 };
 
-const DEFAULT_SPLIT_ROCK = {
-  frontNineKey: "A",
-  backNineKey: "B",
-  nines: {
-    A: {
-      name: "Split Rock Nine A",
-      par: [4, 4, 3, 4, 5, 4, 3, 4, 5],
-      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
-    B: {
-      name: "Split Rock Nine B",
-      par: [4, 5, 4, 3, 4, 4, 5, 3, 4],
-      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
-    C: {
-      name: "Split Rock Nine C",
-      par: [5, 4, 4, 3, 4, 5, 4, 3, 4],
-      hcp: [1, 2, 3, 4, 5, 6, 7, 8, 9],
-    },
-  },
+const SPLIT_ROCK_NORTH = {
+  name: "Split Rock North Course",
+  par: [5, 4, 3, 4, 5, 4, 5, 4, 4, 4, 5, 4, 3, 5, 4, 3, 4, 4],
+  hcp: [13, 17, 7, 1, 3, 15, 11, 5, 9, 2, 10, 16, 4, 6, 8, 18, 12, 14],
 };
 
 const rounds = [
@@ -69,7 +53,7 @@ const rounds = [
     id: 2,
     name: "Saturday PM",
     shortName: "SAT PM",
-    courseKey: "splitRock",
+    courseKey: "splitRockNorth",
     format: "2-Man Scramble",
   },
   {
@@ -103,15 +87,6 @@ function formatPoints(value) {
   return Number.isInteger(value) ? value : value.toFixed(1);
 }
 
-function parseNineNumbers(value, fallback) {
-  const parsed = String(value)
-    .split(",")
-    .map((item) => Number(item.trim()))
-    .filter((item) => !Number.isNaN(item));
-
-  return parsed.length === 9 ? parsed : fallback;
-}
-
 function roundHalfUp(value) {
   return Math.floor(value + 0.5);
 }
@@ -125,7 +100,6 @@ function App() {
   const [scores, setScores] = useState({});
   const [handicaps, setHandicaps] = useState({});
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
-  const [splitRockSetup, setSplitRockSetup] = useState(DEFAULT_SPLIT_ROCK);
 
   const [scrambleDriveCounts, setScrambleDriveCounts] = useState({
     "0": { a: 0, b: 0 },
@@ -250,18 +224,10 @@ function App() {
   function getCourse(roundId) {
     const round = getRound(roundId);
 
-    if (round.courseKey === "jackFrost") {
-      return JACK_FROST;
-    }
+    if (round.courseKey === "jackFrost") return JACK_FROST;
+    if (round.courseKey === "splitRockNorth") return SPLIT_ROCK_NORTH;
 
-    const front = splitRockSetup.nines[splitRockSetup.frontNineKey];
-    const back = splitRockSetup.nines[splitRockSetup.backNineKey];
-
-    return {
-      name: `Split Rock Golf Club (${front.name} / ${back.name})`,
-      par: [...front.par, ...back.par],
-      hcp: [...front.hcp, ...back.hcp],
-    };
+    return JACK_FROST;
   }
 
   function getScore(roundId, player, holeNumber) {
@@ -688,7 +654,7 @@ function App() {
       team1: round1.team1 + round2.team1 + round3.team1,
       team2: round1.team2 + round2.team2 + round3.team2,
     };
-  }, [scores, teams, handicaps, splitRockSetup]);
+  }, [scores, teams, handicaps]);
 
   const matchupGroups = useMemo(() => {
     return [
@@ -722,7 +688,7 @@ function App() {
       {
         roundId: 2,
         title: "Saturday PM",
-        subtitle: "Split Rock • 2-Man Scramble",
+        subtitle: "Split Rock North • 2-Man Scramble",
         items: [
           {
             id: "scramble-1",
@@ -890,45 +856,6 @@ function App() {
     }));
   }
 
-  function updateSplitRockNineName(key, value) {
-    setSplitRockSetup((prev) => ({
-      ...prev,
-      nines: {
-        ...prev.nines,
-        [key]: {
-          ...prev.nines[key],
-          name: value,
-        },
-      },
-    }));
-  }
-
-  function updateSplitRockNinePar(key, value) {
-    setSplitRockSetup((prev) => ({
-      ...prev,
-      nines: {
-        ...prev.nines,
-        [key]: {
-          ...prev.nines[key],
-          par: parseNineNumbers(value, prev.nines[key].par),
-        },
-      },
-    }));
-  }
-
-  function updateSplitRockNineHcp(key, value) {
-    setSplitRockSetup((prev) => ({
-      ...prev,
-      nines: {
-        ...prev.nines,
-        [key]: {
-          ...prev.nines[key],
-          hcp: parseNineNumbers(value, prev.nines[key].hcp),
-        },
-      },
-    }));
-  }
-
   function updateDriveCount(pairIndex, side, value) {
     const clean = Math.max(0, Number(value || 0));
     setScrambleDriveCounts((prev) => ({
@@ -1009,146 +936,90 @@ function App() {
   }
 
   function renderScrambleRow(pair, opponentPair, sideKey) {
-  const scoringPlayer = pair[0];
-  let grossFront = 0;
-  let grossBack = 0;
-  let netFront = 0;
-  let netBack = 0;
-
-  return (
-    <tr key={pair.join("-")}>
-      <td className="scorecard-name">
-        {pair.join(" / ")}
-        <small className="net-note">
-          Net{" "}
-          {(() => {
-            let grossTotal = 0;
-            let netTotal = 0;
-
-            for (let hole = 1; hole <= 18; hole++) {
-              const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-              const net = gross
-                ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole)
-                : 0;
-              grossTotal += gross;
-              netTotal += net;
-            }
-
-            return netTotal || "-";
-          })()}
-        </small>
-      </td>
-
-      {FRONT_HOLES.map((hole) => {
-        const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-        const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
-        const net = gross ? gross - stroke : 0;
-        grossFront += gross;
-        netFront += net;
-
-        return (
-          <td key={hole}>
-            <input
-              className="score-input"
-              type="number"
-              min="1"
-              value={getScore(2, scoringPlayer, hole)}
-              onChange={(event) =>
-                updateScore(2, scoringPlayer, hole, event.target.value)
-              }
-            />
-            {stroke > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">
-                *
-              </span>
-            )}
-          </td>
-        );
-      })}
-
-      <td className="score-total">{`${grossFront || "-"} / ${netFront || "-"}`}</td>
-
-      {BACK_HOLES.map((hole) => {
-        const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-        const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
-        const net = gross ? gross - stroke : 0;
-        grossBack += gross;
-        netBack += net;
-
-        return (
-          <td key={hole}>
-            <input
-              className="score-input"
-              type="number"
-              min="1"
-              value={getScore(2, scoringPlayer, hole)}
-              onChange={(event) =>
-                updateScore(2, scoringPlayer, hole, event.target.value)
-              }
-            />
-            {stroke > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">
-                *
-              </span>
-            )}
-          </td>
-        );
-      })}
-
-      <td className="score-total">{`${grossBack || "-"} / ${netBack || "-"}`}</td>
-      <td className="score-total">{`${grossFront + grossBack || "-"} / ${netFront + netBack || "-"}`}</td>
-    </tr>
-  );
-}
-
-    const grossTotal = grossFront + grossBack;
-    const netTotal = netFront + netBack;
+    const scoringPlayer = pair[0];
+    let grossFront = 0;
+    let grossBack = 0;
+    let netFront = 0;
+    let netBack = 0;
 
     return (
       <tr key={pair.join("-")}>
         <td className="scorecard-name">
           {pair.join(" / ")}
-          <small className="net-note"> Net {netTotal || "-"}</small>
+          <small className="net-note">
+            Net{" "}
+            {(() => {
+              let netTotal = 0;
+              for (let hole = 1; hole <= 18; hole++) {
+                const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+                const net = gross
+                  ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole)
+                  : 0;
+                netTotal += net;
+              }
+              return netTotal || "-";
+            })()}
+          </small>
         </td>
 
-        {FRONT_HOLES.map((hole) => (
-          <td key={hole}>
-            <input
-              className="score-input"
-              type="number"
-              min="1"
-              value={getScore(2, scoringPlayer, hole)}
-              onChange={(event) =>
-                updateScore(2, scoringPlayer, hole, event.target.value)
-              }
-            />
-            {getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">*</span>
-            )}
-          </td>
-        ))}
+        {FRONT_HOLES.map((hole) => {
+          const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+          const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
+          const net = gross ? gross - stroke : 0;
+          grossFront += gross;
+          netFront += net;
+
+          return (
+            <td key={hole}>
+              <input
+                className="score-input"
+                type="number"
+                min="1"
+                value={getScore(2, scoringPlayer, hole)}
+                onChange={(event) =>
+                  updateScore(2, scoringPlayer, hole, event.target.value)
+                }
+              />
+              {stroke > 0 && (
+                <span className="pop-star" aria-label="Handicap stroke">
+                  *
+                </span>
+              )}
+            </td>
+          );
+        })}
 
         <td className="score-total">{`${grossFront || "-"} / ${netFront || "-"}`}</td>
 
-        {BACK_HOLES.map((hole) => (
-          <td key={hole}>
-            <input
-              className="score-input"
-              type="number"
-              min="1"
-              value={getScore(2, scoringPlayer, hole)}
-              onChange={(event) =>
-                updateScore(2, scoringPlayer, hole, event.target.value)
-              }
-            />
-            {getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) > 0 && (
-              <span className="pop-star" aria-label="Handicap stroke">*</span>
-            )}
-          </td>
-        ))}
+        {BACK_HOLES.map((hole) => {
+          const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+          const stroke = getScrambleHoleStrokes(pair, opponentPair, sideKey, hole);
+          const net = gross ? gross - stroke : 0;
+          grossBack += gross;
+          netBack += net;
+
+          return (
+            <td key={hole}>
+              <input
+                className="score-input"
+                type="number"
+                min="1"
+                value={getScore(2, scoringPlayer, hole)}
+                onChange={(event) =>
+                  updateScore(2, scoringPlayer, hole, event.target.value)
+                }
+              />
+              {stroke > 0 && (
+                <span className="pop-star" aria-label="Handicap stroke">
+                  *
+                </span>
+              )}
+            </td>
+          );
+        })}
 
         <td className="score-total">{`${grossBack || "-"} / ${netBack || "-"}`}</td>
-        <td className="score-total">{`${grossTotal || "-"} / ${netTotal || "-"}`}</td>
+        <td className="score-total">{`${grossFront + grossBack || "-"} / ${netFront + netBack || "-"}`}</td>
       </tr>
     );
   }
@@ -1645,94 +1516,6 @@ function App() {
                 ))}
               </div>
             </div>
-          </div>
-        </section>
-
-        <section className="main-card">
-          <div className="section-title">
-            <div>
-              <p>Setup</p>
-              <h2>Split Rock Routing</h2>
-            </div>
-          </div>
-
-          <div className="setup-grid">
-            <div className="setup-team">
-              <strong>Front 9</strong>
-              <select
-                value={splitRockSetup.frontNineKey}
-                onChange={(event) =>
-                  setSplitRockSetup((prev) => ({
-                    ...prev,
-                    frontNineKey: event.target.value,
-                  }))
-                }
-              >
-                <option value="A">{splitRockSetup.nines.A.name}</option>
-                <option value="B">{splitRockSetup.nines.B.name}</option>
-                <option value="C">{splitRockSetup.nines.C.name}</option>
-              </select>
-            </div>
-
-            <div className="setup-team">
-              <strong>Back 9</strong>
-              <select
-                value={splitRockSetup.backNineKey}
-                onChange={(event) =>
-                  setSplitRockSetup((prev) => ({
-                    ...prev,
-                    backNineKey: event.target.value,
-                  }))
-                }
-              >
-                <option value="A">{splitRockSetup.nines.A.name}</option>
-                <option value="B">{splitRockSetup.nines.B.name}</option>
-                <option value="C">{splitRockSetup.nines.C.name}</option>
-              </select>
-            </div>
-          </div>
-
-          <p className="setup-note">
-            Set the two nines you actually play for Saturday PM. The unselected nine is ignored.
-          </p>
-        </section>
-
-        <section className="main-card">
-          <div className="section-title">
-            <div>
-              <p>Setup</p>
-              <h2>Split Rock Nines</h2>
-            </div>
-          </div>
-
-          <div className="setup-grid">
-            {["A", "B", "C"].map((key) => (
-              <div className="setup-round" key={key}>
-                <h3>Nine {key}</h3>
-
-                <label style={{ display: "block", marginBottom: "8px" }}>Name</label>
-                <input
-                  value={splitRockSetup.nines[key].name}
-                  onChange={(event) => updateSplitRockNineName(key, event.target.value)}
-                />
-
-                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                  Pars (comma separated, 9 values)
-                </label>
-                <input
-                  value={splitRockSetup.nines[key].par.join(", ")}
-                  onChange={(event) => updateSplitRockNinePar(key, event.target.value)}
-                />
-
-                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                  Handicaps (comma separated, 9 values)
-                </label>
-                <input
-                  value={splitRockSetup.nines[key].hcp.join(", ")}
-                  onChange={(event) => updateSplitRockNineHcp(key, event.target.value)}
-                />
-              </div>
-            ))}
           </div>
         </section>
 
