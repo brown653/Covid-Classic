@@ -1444,484 +1444,238 @@ function App() {
       </section>
     );
   }
-function SetupView() {
-  const rosters = getTeamRosters();
 
-  return (
-    <>
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Handicap Strokes</h2>
-          </div>
-        </div>
-
-        <div className="players-grid">
-          {players.map((player) => (
-            <div className="handicap-box" key={player}>
-              <label>{player}</label>
-              <input
-                type="number"
-                min="0"
-                value={handicaps[player] || ""}
-                onChange={(event) => updateHandicap(player, event.target.value)}
-                placeholder="0"
-              />
-            </div>
-          ))}
-        </div>
-
-        <p className="setup-note">
-          Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference.
-        </p>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Player Names</h2>
-          </div>
-        </div>
-
-        <div className="players-grid">
-          {players.map((player, index) => (
-            <input
-              key={index}
-              value={player}
-              onChange={(event) => updatePlayer(index, event.target.value)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>4-Person Teams</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          <div className="setup-round">
-            <h3>Team 1</h3>
-            <div className="players-grid">
-              {rosters.team1.map((player, index) => (
-                <select
-                  key={`team1-${index}`}
-                  value={player}
-                  onChange={(event) => updateTeamRoster("team1", index, event.target.value)}
-                >
-                  {players.map((playerOption) => (
-                    <option key={playerOption} value={playerOption}>
-                      {playerOption}
-                    </option>
-                  ))}
-                </select>
-              ))}
-            </div>
-          </div>
-
-          <div className="setup-round">
-            <h3>Team 2</h3>
-            <div className="players-grid">
-              {rosters.team2.map((player, index) => (
-                <select
-                  key={`team2-${index}`}
-                  value={player}
-                  onChange={(event) => updateTeamRoster("team2", index, event.target.value)}
-                >
-                  {players.map((playerOption) => (
-                    <option key={playerOption} value={playerOption}>
-                      {playerOption}
-                    </option>
-                  ))}
-                </select>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Split Rock Routing</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          <div className="setup-team">
-            <strong>Front 9</strong>
-            <select
-              value={splitRockSetup.frontNineKey}
-              onChange={(event) =>
-                setSplitRockSetup((prev) => ({
-                  ...prev,
-                  frontNineKey: event.target.value,
-                }))
-              }
-            >
-              <option value="A">{splitRockSetup.nines.A.name}</option>
-              <option value="B">{splitRockSetup.nines.B.name}</option>
-              <option value="C">{splitRockSetup.nines.C.name}</option>
-            </select>
-          </div>
-
-          <div className="setup-team">
-            <strong>Back 9</strong>
-            <select
-              value={splitRockSetup.backNineKey}
-              onChange={(event) =>
-                setSplitRockSetup((prev) => ({
-                  ...prev,
-                  backNineKey: event.target.value,
-                }))
-              }
-            >
-              <option value="A">{splitRockSetup.nines.A.name}</option>
-              <option value="B">{splitRockSetup.nines.B.name}</option>
-              <option value="C">{splitRockSetup.nines.C.name}</option>
-            </select>
-          </div>
-        </div>
-
-        <p className="setup-note">
-          Set the two nines you actually play for Saturday PM. The unselected nine is ignored.
-        </p>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Split Rock Nines</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          {["A", "B", "C"].map((key) => (
-            <div className="setup-round" key={key}>
-              <h3>Nine {key}</h3>
-
-              <label style={{ display: "block", marginBottom: "8px" }}>Name</label>
-              <input
-                value={splitRockSetup.nines[key].name}
-                onChange={(event) => updateSplitRockNineName(key, event.target.value)}
-              />
-
-              <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                Pars (comma separated, 9 values)
-              </label>
-              <input
-                value={splitRockSetup.nines[key].par.join(", ")}
-                onChange={(event) => updateSplitRockNinePar(key, event.target.value)}
-              />
-
-              <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                Handicaps (comma separated, 9 values)
-              </label>
-              <input
-                value={splitRockSetup.nines[key].hcp.join(", ")}
-                onChange={(event) => updateSplitRockNineHcp(key, event.target.value)}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Round Matchups</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          {rounds.map((round) => (
-            <div className="setup-round" key={round.id}>
-              <h3>{round.name}</h3>
-              <span>{round.format}</span>
-
-              {(teams[round.id] || []).map((team, teamIndex) => (
-                <div className="setup-team" key={teamIndex}>
-                  <strong>
-                    {round.format === "Singles Matches"
-                      ? `Match ${teamIndex + 1}`
-                      : round.id === 1
-                      ? teamIndex < 2
-                        ? `Team 1 Pair ${teamIndex + 1}`
-                        : `Team 2 Pair ${teamIndex - 1}`
-                      : `Team ${teamIndex + 1}`}
-                  </strong>
-
-                  {team.map((player, playerIndex) => (
-                    <select
-                      key={playerIndex}
-                      value={player}
-                      onChange={(event) =>
-                        updateTeam(round.id, teamIndex, playerIndex, event.target.value)
-                      }
-                    >
-                      {players.map((playerOption) => (
-                        <option key={playerOption} value={playerOption}>
-                          {playerOption}
-                        </option>
-                      ))}
-                    </select>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </section>
-    </>
-  );
-}
   function SetupView() {
-  const rosters = getTeamRosters();
-
-  return (
-    <>
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Handicap Strokes</h2>
-          </div>
-        </div>
-
-        <div className="players-grid">
-          {players.map((player) => (
-            <div className="handicap-box" key={player}>
-              <label>{player}</label>
-              <input
-                type="number"
-                min="0"
-                value={handicaps[player] || ""}
-                onChange={(event) => updateHandicap(player, event.target.value)}
-                placeholder="0"
-              />
-            </div>
-          ))}
-        </div>
-
-        <p className="setup-note">
-          Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference.
-        </p>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Player Names</h2>
-          </div>
-        </div>
-
-        <div className="players-grid">
-          {players.map((player, index) => (
-            <input
-              key={index}
-              value={player}
-              onChange={(event) => updatePlayer(index, event.target.value)}
-            />
-          ))}
-        </div>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>4-Person Teams</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          <div className="setup-round">
-            <h3>Team 1</h3>
-            <div className="players-grid">
-              {rosters.team1.map((player, index) => (
-                <select
-                  key={`team1-${index}`}
-                  value={player}
-                  onChange={(event) => updateTeamRoster("team1", index, event.target.value)}
-                >
-                  {players.map((playerOption) => (
-                    <option key={playerOption} value={playerOption}>
-                      {playerOption}
-                    </option>
-                  ))}
-                </select>
-              ))}
+    return (
+      <>
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Handicap Strokes</h2>
             </div>
           </div>
 
-          <div className="setup-round">
-            <h3>Team 2</h3>
-            <div className="players-grid">
-              {rosters.team2.map((player, index) => (
-                <select
-                  key={`team2-${index}`}
-                  value={player}
-                  onChange={(event) => updateTeamRoster("team2", index, event.target.value)}
-                >
-                  {players.map((playerOption) => (
-                    <option key={playerOption} value={playerOption}>
-                      {playerOption}
-                    </option>
-                  ))}
-                </select>
-              ))}
+          <div className="players-grid">
+            {players.map((player) => (
+              <div className="handicap-box" key={player}>
+                <label>{player}</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={handicaps[player] || ""}
+                  onChange={(event) => updateHandicap(player, event.target.value)}
+                  placeholder="0"
+                />
+              </div>
+            ))}
+          </div>
+
+          <p className="setup-note">
+            Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference.
+          </p>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Player Names</h2>
             </div>
           </div>
-        </div>
-      </section>
 
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Split Rock Routing</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          <div className="setup-team">
-            <strong>Front 9</strong>
-            <select
-              value={splitRockSetup.frontNineKey}
-              onChange={(event) =>
-                setSplitRockSetup((prev) => ({
-                  ...prev,
-                  frontNineKey: event.target.value,
-                }))
-              }
-            >
-              <option value="A">{splitRockSetup.nines.A.name}</option>
-              <option value="B">{splitRockSetup.nines.B.name}</option>
-              <option value="C">{splitRockSetup.nines.C.name}</option>
-            </select>
-          </div>
-
-          <div className="setup-team">
-            <strong>Back 9</strong>
-            <select
-              value={splitRockSetup.backNineKey}
-              onChange={(event) =>
-                setSplitRockSetup((prev) => ({
-                  ...prev,
-                  backNineKey: event.target.value,
-                }))
-              }
-            >
-              <option value="A">{splitRockSetup.nines.A.name}</option>
-              <option value="B">{splitRockSetup.nines.B.name}</option>
-              <option value="C">{splitRockSetup.nines.C.name}</option>
-            </select>
-          </div>
-        </div>
-
-        <p className="setup-note">
-          Set the two nines you actually play for Saturday PM. The unselected nine is ignored.
-        </p>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Split Rock Nines</h2>
-          </div>
-        </div>
-
-        <div className="setup-grid">
-          {["A", "B", "C"].map((key) => (
-            <div className="setup-round" key={key}>
-              <h3>Nine {key}</h3>
-
-              <label style={{ display: "block", marginBottom: "8px" }}>Name</label>
+          <div className="players-grid">
+            {players.map((player, index) => (
               <input
-                value={splitRockSetup.nines[key].name}
-                onChange={(event) => updateSplitRockNineName(key, event.target.value)}
+                key={index}
+                value={player}
+                onChange={(event) => updatePlayer(index, event.target.value)}
               />
+            ))}
+          </div>
+        </section>
 
-              <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                Pars (comma separated, 9 values)
-              </label>
-              <input
-                value={splitRockSetup.nines[key].par.join(", ")}
-                onChange={(event) => updateSplitRockNinePar(key, event.target.value)}
-              />
-
-              <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
-                Handicaps (comma separated, 9 values)
-              </label>
-              <input
-                value={splitRockSetup.nines[key].hcp.join(", ")}
-                onChange={(event) => updateSplitRockNineHcp(key, event.target.value)}
-              />
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Split Rock Routing</h2>
             </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="main-card">
-        <div className="section-title">
-          <div>
-            <p>Setup</p>
-            <h2>Round Matchups</h2>
           </div>
-        </div>
 
-        <div className="setup-grid">
-          {rounds.map((round) => (
-            <div className="setup-round" key={round.id}>
-              <h3>{round.name}</h3>
-              <span>{round.format}</span>
+          <div className="setup-grid">
+            <div className="setup-team">
+              <strong>Front 9</strong>
+              <select
+                value={splitRockSetup.frontNineKey}
+                onChange={(event) =>
+                  setSplitRockSetup((prev) => ({
+                    ...prev,
+                    frontNineKey: event.target.value,
+                  }))
+                }
+              >
+                <option value="A">{splitRockSetup.nines.A.name}</option>
+                <option value="B">{splitRockSetup.nines.B.name}</option>
+                <option value="C">{splitRockSetup.nines.C.name}</option>
+              </select>
+            </div>
 
-              {(teams[round.id] || []).map((team, teamIndex) => (
-                <div className="setup-team" key={teamIndex}>
-                  <strong>
-                    {round.format === "Singles Matches"
-                      ? `Match ${teamIndex + 1}`
-                      : round.id === 1
-                      ? teamIndex < 2
-                        ? `Team 1 Pair ${teamIndex + 1}`
-                        : `Team 2 Pair ${teamIndex - 1}`
-                      : `Team ${teamIndex + 1}`}
-                  </strong>
+            <div className="setup-team">
+              <strong>Back 9</strong>
+              <select
+                value={splitRockSetup.backNineKey}
+                onChange={(event) =>
+                  setSplitRockSetup((prev) => ({
+                    ...prev,
+                    backNineKey: event.target.value,
+                  }))
+                }
+              >
+                <option value="A">{splitRockSetup.nines.A.name}</option>
+                <option value="B">{splitRockSetup.nines.B.name}</option>
+                <option value="C">{splitRockSetup.nines.C.name}</option>
+              </select>
+            </div>
+          </div>
 
-                  {team.map((player, playerIndex) => (
-                    <select
-                      key={playerIndex}
-                      value={player}
-                      onChange={(event) =>
-                        updateTeam(round.id, teamIndex, playerIndex, event.target.value)
-                      }
-                    >
-                      {players.map((playerOption) => (
-                        <option key={playerOption} value={playerOption}>
-                          {playerOption}
-                        </option>
-                      ))}
-                    </select>
-                  ))}
+          <p className="setup-note">
+            Set the two nines you actually play for Saturday PM. The unselected nine is ignored.
+          </p>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Split Rock Nines</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            {["A", "B", "C"].map((key) => (
+              <div className="setup-round" key={key}>
+                <h3>Nine {key}</h3>
+
+                <label style={{ display: "block", marginBottom: "8px" }}>Name</label>
+                <input
+                  value={splitRockSetup.nines[key].name}
+                  onChange={(event) => updateSplitRockNineName(key, event.target.value)}
+                />
+
+                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
+                  Pars (comma separated, 9 values)
+                </label>
+                <input
+                  value={splitRockSetup.nines[key].par.join(", ")}
+                  onChange={(event) => updateSplitRockNinePar(key, event.target.value)}
+                />
+
+                <label style={{ display: "block", marginTop: "12px", marginBottom: "8px" }}>
+                  Handicaps (comma separated, 9 values)
+                </label>
+                <input
+                  value={splitRockSetup.nines[key].hcp.join(", ")}
+                  onChange={(event) => updateSplitRockNineHcp(key, event.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Scramble Drive Minimums</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            {[0, 1].map((pairIndex) => (
+              <div className="setup-round" key={pairIndex}>
+                <h3>Scramble Match {pairIndex + 1}</h3>
+                <span>{teams[2][pairIndex].join(" / ")} vs {teams[2][pairIndex + 2].join(" / ")}</span>
+
+                <div className="players-grid" style={{ marginTop: "12px" }}>
+                  <div className="handicap-box">
+                    <label>{teams[2][pairIndex][0]} drives used</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={scrambleDriveCounts[String(pairIndex)].a}
+                      onChange={(event) => updateDriveCount(String(pairIndex), "a", event.target.value)}
+                    />
+                  </div>
+                  <div className="handicap-box">
+                    <label>{teams[2][pairIndex][1]} drives used</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={scrambleDriveCounts[String(pairIndex)].b}
+                      onChange={(event) => updateDriveCount(String(pairIndex), "b", event.target.value)}
+                    />
+                  </div>
                 </div>
-              ))}
+
+                <p className="setup-note" style={{ marginTop: "10px" }}>
+                  Minimum 6 each — currently {scrambleDriveCounts[String(pairIndex)].a >= 6 ? "✓" : "✗"} / {scrambleDriveCounts[String(pairIndex)].b >= 6 ? "✓" : "✗"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
+              <h2>Teams & Matches</h2>
             </div>
-          ))}
-        </div>
-      </section>
-    </>
-  );
-}
+          </div>
+
+          <div className="setup-grid">
+            {rounds.map((round) => (
+              <div className="setup-round" key={round.id}>
+                <h3>{round.name}</h3>
+                <span>{round.format}</span>
+
+                {(teams[round.id] || []).map((team, teamIndex) => (
+                  <div className="setup-team" key={teamIndex}>
+                    <strong>
+                      {round.format === "Singles Matches"
+                        ? `Match ${teamIndex + 1}`
+                        : round.id === 1
+                        ? teamIndex < 2
+                          ? `Team 1 Pair ${teamIndex + 1}`
+                          : `Team 2 Pair ${teamIndex - 1}`
+                        : `Team ${teamIndex + 1}`}
+                    </strong>
+
+                    {team.map((player, playerIndex) => (
+                      <select
+                        key={playerIndex}
+                        value={player}
+                        onChange={(event) =>
+                          updateTeam(round.id, teamIndex, playerIndex, event.target.value)
+                        }
+                      >
+                        {players.map((playerOption) => (
+                          <option key={playerOption} value={playerOption}>{playerOption}</option>
+                        ))}
+                      </select>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+      </>
+    );
+  }
 
   function ScorecardView() {
     const matchup = selectedMatchup;
