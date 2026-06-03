@@ -112,6 +112,10 @@ function parseNineNumbers(value, fallback) {
   return parsed.length === 9 ? parsed : fallback;
 }
 
+function roundHalfUp(value) {
+  return Math.floor(value + 0.5);
+}
+
 function App() {
   const [players, setPlayers] = useState(defaultPlayers);
   const [activeTab, setActiveTab] = useState("home");
@@ -122,6 +126,11 @@ function App() {
   const [handicaps, setHandicaps] = useState({});
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
   const [splitRockSetup, setSplitRockSetup] = useState(DEFAULT_SPLIT_ROCK);
+
+  const [scrambleDriveCounts, setScrambleDriveCounts] = useState({
+    "0": { a: 0, b: 0 },
+    "1": { a: 0, b: 0 },
+  });
 
   const [teams, setTeams] = useState({
     1: [
@@ -343,13 +352,11 @@ function App() {
     return roundId === 1 || roundId === 3;
   }
 
-  function getHoleStrokes(roundId, player, holeNumber) {
-    if (!handicapApplies(roundId)) return 0;
-
+  function getStablefordHoleStrokes(player, holeNumber) {
     const totalStrokes = Number(handicaps[player] || 0);
     if (!totalStrokes) return 0;
 
-    const course = getCourse(roundId);
+    const course = getCourse(1);
     const holeHcp = course.hcp[holeNumber - 1];
 
     const baseStrokes = Math.floor(totalStrokes / 18);
@@ -358,17 +365,87 @@ function App() {
     return baseStrokes + (holeHcp <= extraStrokes ? 1 : 0);
   }
 
-  function getNetScore(roundId, player, holeNumber) {
-    const gross = Number(getScore(roundId, player, holeNumber));
-    if (!gross) return "";
-    return gross - getHoleStrokes(roundId, player, holeNumber);
+  function getSinglesMatchStrokeInfo(playerA, playerB) {
+    const hcpA = Number(handicaps[playerA] || 0);
+    const hcpB = Number(handicaps[playerB] || 0);
+
+    if (hcpA === hcpB) {
+      return { receiver: null, strokes: 0 };
+    }
+
+    return hcpA > hcpB
+      ? { receiver: playerA, strokes: hcpA - hcpB }
+      : { receiver: playerB, strokes: hcpB - hcpA };
   }
 
-  function getPlayerTotal(roundId, player, start = 1, end = 18, net = false) {
+  function getSinglesHoleStrokes(playerA, playerB, player, holeNumber) {
+    const { receiver, strokes } = getSinglesMatchStrokeInfo(playerA, playerB);
+    if (!receiver || strokes <= 0 || receiver !== player) return 0;
+
+    const course = getCourse(3);
+    const holeHcp = course.hcp[holeNumber - 1];
+
+    return holeHcp <= strokes ? 1 : 0;
+  }
+
+  function getScrambleMatchStrokeInfo(pairA, pairB) {
+    const teamAHcp = roundHalfUp(((Number(handicaps[pairA[0]] || 0) + Number(handicaps[pairA[1]] || 0)) * 0.25));
+    const teamBHcp = roundHalfUp(((Number(handicaps[pairB[0]] || 0) + Number(handicaps[pairB[1]] || 0)) * 0.25));
+
+    if (teamAHcp === teamBHcp) {
+      return {
+        teamAHcp,
+        teamBHcp,
+        receiver: null,
+        strokes: 0,
+      };
+    }
+
+    return teamAHcp > teamBHcp
+      ? {
+          teamAHcp,
+          teamBHcp,
+          receiver: "A",
+          strokes: teamAHcp - teamBHcp,
+        }
+      : {
+          teamAHcp,
+          teamBHcp,
+          receiver: "B",
+          strokes: teamBHcp - teamAHcp,
+        };
+  }
+
+  function getScrambleHoleStrokes(pairA, pairB, side, holeNumber) {
+    const { receiver, strokes } = getScrambleMatchStrokeInfo(pairA, pairB);
+    if (!receiver || strokes <= 0 || receiver !== side) return 0;
+
+    const course = getCourse(2);
+    const holeHcp = course.hcp[holeNumber - 1];
+
+    return holeHcp <= strokes ? 1 : 0;
+  }
+
+  function getNetScore(roundId, player, holeNumber, context = null) {
+    const gross = Number(getScore(roundId, player, holeNumber));
+    if (!gross) return "";
+
+    if (roundId === 1) {
+      return gross - getStablefordHoleStrokes(player, holeNumber);
+    }
+
+    if (roundId === 3 && context?.opponent) {
+      return gross - getSinglesHoleStrokes(player, context.opponent, player, holeNumber);
+    }
+
+    return gross;
+  }
+
+  function getPlayerTotal(roundId, player, start = 1, end = 18, net = false, context = null) {
     let total = 0;
 
     for (let hole = start; hole <= end; hole++) {
-      const score = net ? getNetScore(roundId, player, hole) : getScore(roundId, player, hole);
+      const score = net ? getNetScore(roundId, player, hole, context) : getScore(roundId, player, hole);
       total += Number(score || 0);
     }
 
@@ -452,12 +529,15 @@ function App() {
     let holesCounted = 0;
 
     for (let hole = start; hole <= end; hole++) {
-      const scoreA = Number(getScore(2, playerA, hole));
-      const scoreB = Number(getScore(2, playerB, hole));
+      const grossA = Number(getScore(2, playerA, hole));
+      const grossB = Number(getScore(2, playerB, hole));
 
-      if (scoreA && scoreB) {
-        teamAScore += scoreA;
-        teamBScore += scoreB;
+      if (grossA && grossB) {
+        const netA = grossA - getScrambleHoleStrokes(pairA, pairB, "A", hole);
+        const netB = grossB - getScrambleHoleStrokes(pairA, pairB, "B", hole);
+
+        teamAScore += netA;
+        teamBScore += netB;
         holesCounted += 1;
       }
     }
@@ -494,8 +574,8 @@ function App() {
     let holesCounted = 0;
 
     for (let hole = start; hole <= end; hole++) {
-      const netA = Number(getNetScore(3, playerA, hole));
-      const netB = Number(getNetScore(3, playerB, hole));
+      const netA = Number(getNetScore(3, playerA, hole, { opponent: playerB }));
+      const netB = Number(getNetScore(3, playerB, hole, { opponent: playerA }));
 
       if (netA && netB) {
         if (netA < netB) teamAScore += 1;
@@ -599,14 +679,6 @@ function App() {
     return segment.teamAScore < segment.teamBScore ? "Team 1" : "Team 2";
   }
 
-  const roundSegments = useMemo(() => {
-    return {
-      1: { ...getRoundOverallSegments(1), label: "Saturday AM", format: "Stableford" },
-      2: { ...getRoundOverallSegments(2), label: "Saturday PM", format: "Scramble" },
-      3: { ...getRoundOverallSegments(3), label: "Sunday AM", format: "Singles" },
-    };
-  }, [scores, teams, handicaps, splitRockSetup]);
-
   const weekendScore = useMemo(() => {
     const round1 = getRoundCupPoints(1);
     const round2 = getRoundCupPoints(2);
@@ -661,6 +733,7 @@ function App() {
             sideBName: "Team 2 Pair 1",
             sideAPlayers: teams[2][0],
             sideBPlayers: teams[2][2],
+            pairIndex: 0,
           },
           {
             id: "scramble-2",
@@ -671,6 +744,7 @@ function App() {
             sideBName: "Team 2 Pair 2",
             sideAPlayers: teams[2][1],
             sideBPlayers: teams[2][3],
+            pairIndex: 1,
           },
         ],
       },
@@ -825,13 +899,24 @@ function App() {
     }));
   }
 
-  function renderScorecardRow(roundId, player) {
+  function updateDriveCount(pairIndex, side, value) {
+    const clean = Math.max(0, Number(value || 0));
+    setScrambleDriveCounts((prev) => ({
+      ...prev,
+      [pairIndex]: {
+        ...prev[pairIndex],
+        [side]: clean,
+      },
+    }));
+  }
+
+  function renderScorecardRow(roundId, player, context = null) {
     const front = getPlayerTotal(roundId, player, 1, 9);
     const back = getPlayerTotal(roundId, player, 10, 18);
     const total = front + back;
 
-    const netFront = getPlayerTotal(roundId, player, 1, 9, true);
-    const netBack = getPlayerTotal(roundId, player, 10, 18, true);
+    const netFront = getPlayerTotal(roundId, player, 1, 9, true, context);
+    const netBack = getPlayerTotal(roundId, player, 10, 18, true, context);
     const showNet = handicapApplies(roundId);
 
     return (
@@ -852,9 +937,12 @@ function App() {
                 updateScore(roundId, player, hole, event.target.value)
               }
             />
-            {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
+            {showNet && context?.opponent && getSinglesHoleStrokes(player, context.opponent, player, hole) > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">*</span>
+            )}
+            {showNet && !context?.opponent && roundId === 1 && getStablefordHoleStrokes(player, hole) > 0 && (
               <span className="pop-star" aria-label="Handicap stroke">
-                {getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}
+                {getStablefordHoleStrokes(player, hole) > 1 ? "**" : "*"}
               </span>
             )}
           </td>
@@ -873,9 +961,12 @@ function App() {
                 updateScore(roundId, player, hole, event.target.value)
               }
             />
-            {showNet && getHoleStrokes(roundId, player, hole) > 0 && (
+            {showNet && context?.opponent && getSinglesHoleStrokes(player, context.opponent, player, hole) > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">*</span>
+            )}
+            {showNet && !context?.opponent && roundId === 1 && getStablefordHoleStrokes(player, hole) > 0 && (
               <span className="pop-star" aria-label="Handicap stroke">
-                {getHoleStrokes(roundId, player, hole) > 1 ? "**" : "*"}
+                {getStablefordHoleStrokes(player, hole) > 1 ? "**" : "*"}
               </span>
             )}
           </td>
@@ -887,15 +978,36 @@ function App() {
     );
   }
 
-  function renderScrambleRow(pair) {
+  function renderScrambleRow(pair, opponentPair, sideKey) {
     const scoringPlayer = pair[0];
-    const front = getPlayerTotal(2, scoringPlayer, 1, 9);
-    const back = getPlayerTotal(2, scoringPlayer, 10, 18);
-    const total = front + back;
+    let grossFront = 0;
+    let grossBack = 0;
+    let netFront = 0;
+    let netBack = 0;
+
+    for (let hole = 1; hole <= 9; hole++) {
+      const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+      const net = gross ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) : 0;
+      grossFront += gross;
+      netFront += net;
+    }
+
+    for (let hole = 10; hole <= 18; hole++) {
+      const gross = Number(getScore(2, scoringPlayer, hole) || 0);
+      const net = gross ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) : 0;
+      grossBack += gross;
+      netBack += net;
+    }
+
+    const grossTotal = grossFront + grossBack;
+    const netTotal = netFront + netBack;
 
     return (
       <tr key={pair.join("-")}>
-        <td className="scorecard-name">{pair.join(" / ")}</td>
+        <td className="scorecard-name">
+          {pair.join(" / ")}
+          <small className="net-note"> Net {netTotal || "-"}</small>
+        </td>
 
         {FRONT_HOLES.map((hole) => (
           <td key={hole}>
@@ -908,10 +1020,13 @@ function App() {
                 updateScore(2, scoringPlayer, hole, event.target.value)
               }
             />
+            {getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">*</span>
+            )}
           </td>
         ))}
 
-        <td className="score-total">{front || "-"}</td>
+        <td className="score-total">{`${grossFront || "-"} / ${netFront || "-"}`}</td>
 
         {BACK_HOLES.map((hole) => (
           <td key={hole}>
@@ -924,11 +1039,14 @@ function App() {
                 updateScore(2, scoringPlayer, hole, event.target.value)
               }
             />
+            {getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) > 0 && (
+              <span className="pop-star" aria-label="Handicap stroke">*</span>
+            )}
           </td>
         ))}
 
-        <td className="score-total">{back || "-"}</td>
-        <td className="score-total">{total || "-"}</td>
+        <td className="score-total">{`${grossBack || "-"} / ${netBack || "-"}`}</td>
+        <td className="score-total">{`${grossTotal || "-"} / ${netTotal || "-"}`}</td>
       </tr>
     );
   }
@@ -1186,9 +1304,13 @@ function App() {
 
     const frontTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9);
     const backTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18);
-    const netFront = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9, true);
-    const netBack = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18, true);
-    const showNet = handicapApplies(selectedRoundId);
+    const netFront = selectedRoundId === 1
+      ? getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9, true)
+      : frontTotal;
+    const netBack = selectedRoundId === 1
+      ? getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18, true)
+      : backTotal;
+    const showNet = selectedRoundId === 1;
 
     return (
       <section className="entry-layout">
@@ -1239,8 +1361,14 @@ function App() {
           <div className="hole-list">
             {course.par.map((par, index) => {
               const hole = index + 1;
-              const pops = getHoleStrokes(selectedRoundId, scoringPlayer, hole);
-              const netScore = getNetScore(selectedRoundId, scoringPlayer, hole);
+              const pops =
+                selectedRoundId === 1
+                  ? getStablefordHoleStrokes(scoringPlayer, hole)
+                  : 0;
+              const netScore =
+                selectedRoundId === 1
+                  ? getNetScore(selectedRoundId, scoringPlayer, hole)
+                  : "";
 
               return (
                 <div className="hole-row" key={hole}>
@@ -1248,8 +1376,8 @@ function App() {
                     <strong>Hole {hole}</strong>
                     <span>
                       Par {par} · HCP {course.hcp[hole - 1]}
-                      {showNet && pops > 0 ? ` · ${pops} stroke${pops > 1 ? "s" : ""}` : ""}
-                      {showNet && netScore ? ` · Net ${netScore}` : ""}
+                      {selectedRoundId === 1 && pops > 0 ? ` · ${pops} stroke${pops > 1 ? "s" : ""}` : ""}
+                      {selectedRoundId === 1 && netScore ? ` · Net ${netScore}` : ""}
                     </span>
                   </div>
 
@@ -1344,7 +1472,7 @@ function App() {
           </div>
 
           <p className="setup-note">
-            Strokes apply to Stableford and Singles only. Scramble remains gross.
+            Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference.
           </p>
         </section>
 
@@ -1459,6 +1587,51 @@ function App() {
           <div className="section-title">
             <div>
               <p>Setup</p>
+              <h2>Scramble Drive Minimums</h2>
+            </div>
+          </div>
+
+          <div className="setup-grid">
+            {[0, 1].map((pairIndex) => (
+              <div className="setup-round" key={pairIndex}>
+                <h3>Scramble Match {pairIndex + 1}</h3>
+                <span>{teams[2][pairIndex].join(" / ")} vs {teams[2][pairIndex + 2].join(" / ")}</span>
+
+                <div className="players-grid" style={{ marginTop: "12px" }}>
+                  <div className="handicap-box">
+                    <label>{teams[2][pairIndex][0]} drives used</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={scrambleDriveCounts[String(pairIndex)].a}
+                      onChange={(event) => updateDriveCount(String(pairIndex), "a", event.target.value)}
+                    />
+                  </div>
+                  <div className="handicap-box">
+                    <label>{teams[2][pairIndex][1]} drives used</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="18"
+                      value={scrambleDriveCounts[String(pairIndex)].b}
+                      onChange={(event) => updateDriveCount(String(pairIndex), "b", event.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <p className="setup-note" style={{ marginTop: "10px" }}>
+                  Minimum 6 each — currently {scrambleDriveCounts[String(pairIndex)].a >= 6 ? "✓" : "✗"} / {scrambleDriveCounts[String(pairIndex)].b >= 6 ? "✓" : "✗"}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Setup</p>
               <h2>Teams & Matches</h2>
             </div>
           </div>
@@ -1514,6 +1687,21 @@ function App() {
     const outPar = course.par.slice(0, 9).reduce((sum, par) => sum + par, 0);
     const inPar = course.par.slice(9, 18).reduce((sum, par) => sum + par, 0);
 
+    const scrambleInfo =
+      matchup.type === "scramble"
+        ? getScrambleMatchStrokeInfo(matchup.sideAPlayers, matchup.sideBPlayers)
+        : null;
+
+    const singlesInfo =
+      matchup.type === "singles"
+        ? getSinglesMatchStrokeInfo(matchup.sideAPlayers[0], matchup.sideBPlayers[0])
+        : null;
+
+    const driveInfo =
+      matchup.type === "scramble" && matchup.pairIndex !== undefined
+        ? scrambleDriveCounts[String(matchup.pairIndex)]
+        : null;
+
     return (
       <>
         <div className="detail-actions">
@@ -1557,6 +1745,40 @@ function App() {
             <div className="detail-team-badge">T2</div>
           </div>
         </section>
+
+        {matchup.type === "scramble" && scrambleInfo && (
+          <section className="main-card" style={{ marginTop: "14px" }}>
+            <div className="section-title">
+              <div>
+                <p>Scramble Rules</p>
+                <h2>Handicap & Drive Tracker</h2>
+              </div>
+            </div>
+            <p>
+              Team 1 handicap: <strong>{scrambleInfo.teamAHcp}</strong> · Team 2 handicap: <strong>{scrambleInfo.teamBHcp}</strong> ·
+              Strokes applied: <strong>{scrambleInfo.strokes}</strong> to <strong>{scrambleInfo.receiver === "A" ? "Team 1" : scrambleInfo.receiver === "B" ? "Team 2" : "Neither Team"}</strong>
+            </p>
+            {driveInfo && (
+              <p>
+                Drive minimums — {matchup.sideAPlayers[0]}: <strong>{driveInfo.a}</strong>, {matchup.sideAPlayers[1]}: <strong>{driveInfo.b}</strong>
+              </p>
+            )}
+          </section>
+        )}
+
+        {matchup.type === "singles" && singlesInfo && (
+          <section className="main-card" style={{ marginTop: "14px" }}>
+            <div className="section-title">
+              <div>
+                <p>Singles Rules</p>
+                <h2>Stroke Difference</h2>
+              </div>
+            </div>
+            <p>
+              Strokes applied: <strong>{singlesInfo.strokes}</strong> to <strong>{singlesInfo.receiver ?? "Neither Player"}</strong>
+            </p>
+          </section>
+        )}
 
         <section className="scorecard-shell">
           <div className="scorecard-wrap">
@@ -1602,15 +1824,15 @@ function App() {
 
                 {matchup.type === "scramble" && (
                   <>
-                    {renderScrambleRow(matchup.sideAPlayers)}
-                    {renderScrambleRow(matchup.sideBPlayers)}
+                    {renderScrambleRow(matchup.sideAPlayers, matchup.sideBPlayers, "A")}
+                    {renderScrambleRow(matchup.sideBPlayers, matchup.sideAPlayers, "B")}
                   </>
                 )}
 
                 {matchup.type === "singles" && (
                   <>
-                    {renderScorecardRow(3, matchup.sideAPlayers[0])}
-                    {renderScorecardRow(3, matchup.sideBPlayers[0])}
+                    {renderScorecardRow(3, matchup.sideAPlayers[0], { opponent: matchup.sideBPlayers[0] })}
+                    {renderScorecardRow(3, matchup.sideBPlayers[0], { opponent: matchup.sideAPlayers[0] })}
                   </>
                 )}
 
