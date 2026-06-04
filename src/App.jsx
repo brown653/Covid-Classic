@@ -1557,14 +1557,6 @@ function App() {
         ? getSinglesMatchStrokeInfo(matchup.sideAPlayers[0], matchup.sideBPlayers[0])
         : null;
 
-    const driveInfo =
-      matchup.type === "scramble" && matchup.pairIndex !== undefined
-        ? scrambleDriveCounts[String(matchup.pairIndex)]
-        : null;
-
-    const driveAComplete = driveInfo ? driveInfo.a >= 6 : false;
-    const driveBComplete = driveInfo ? driveInfo.b >= 6 : false;
-
     return (
       <>
         <div className="detail-actions">
@@ -1609,7 +1601,7 @@ function App() {
           </div>
         </section>
 
-        {matchup.type === "scramble" && scrambleInfo && (
+        {matchup.type === "scramble" && (
           <>
             <section className="main-card" style={{ marginTop: "14px" }}>
               <div className="section-title">
@@ -1618,17 +1610,39 @@ function App() {
                   <h2>Handicap</h2>
                 </div>
               </div>
-              <p>
-                Team 1 handicap: <strong>{scrambleInfo.teamAHcp}</strong> · Team 2 handicap: <strong>{scrambleInfo.teamBHcp}</strong> ·
-                Strokes applied: <strong>{scrambleInfo.strokes}</strong> to{" "}
-                <strong>
-                  {scrambleInfo.receiver === "A"
-                    ? "Team 1"
-                    : scrambleInfo.receiver === "B"
-                    ? "Team 2"
-                    : "Neither Team"}
-                </strong>
-              </p>
+
+              {(() => {
+                const info1 = getScrambleMatchStrokeInfo(teams[2][0], teams[2][2]);
+                const info2 = getScrambleMatchStrokeInfo(teams[2][1], teams[2][3]);
+
+                return (
+                  <>
+                    <p>
+                      Match 1 handicap — Team 1 Pair 1: <strong>{info1.teamAHcp}</strong> · Team 2 Pair 1: <strong>{info1.teamBHcp}</strong> ·
+                      Strokes applied: <strong>{info1.strokes}</strong> to{" "}
+                      <strong>
+                        {info1.receiver === "A"
+                          ? "Team 1 Pair 1"
+                          : info1.receiver === "B"
+                          ? "Team 2 Pair 1"
+                          : "Neither Side"}
+                      </strong>
+                    </p>
+
+                    <p style={{ marginTop: "10px" }}>
+                      Match 2 handicap — Team 1 Pair 2: <strong>{info2.teamAHcp}</strong> · Team 2 Pair 2: <strong>{info2.teamBHcp}</strong> ·
+                      Strokes applied: <strong>{info2.strokes}</strong> to{" "}
+                      <strong>
+                        {info2.receiver === "A"
+                          ? "Team 1 Pair 2"
+                          : info2.receiver === "B"
+                          ? "Team 2 Pair 2"
+                          : "Neither Side"}
+                      </strong>
+                    </p>
+                  </>
+                );
+              })()}
             </section>
 
             <section className="main-card" style={{ marginTop: "14px" }}>
@@ -1640,49 +1654,46 @@ function App() {
               </div>
 
               <div className="players-grid">
-                <div
-                  className="handicap-box"
-                  style={{
-                    border: driveAComplete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
-                    borderRadius: "12px",
-                    padding: "12px",
-                    background: driveAComplete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
-                  }}
-                >
-                  <label>{matchup.sideAPlayers[0]} drives used</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="18"
-                    value={driveInfo?.a || 0}
-                    onChange={(event) => updateDriveCount(String(matchup.pairIndex), "a", event.target.value)}
-                  />
-                  <p style={{ margin: "8px 0 0", fontWeight: 800, color: driveAComplete ? "#0c6a36" : "#a3162d" }}>
-                    {driveAComplete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(driveInfo?.a || 0))} more`}
-                  </p>
-                </div>
+                {[
+                  { pairIndex: "0", side: "a", player: teams[2][0][0] },
+                  { pairIndex: "0", side: "b", player: teams[2][0][1] },
+                  { pairIndex: "1", side: "a", player: teams[2][1][0] },
+                  { pairIndex: "1", side: "b", player: teams[2][1][1] },
+                ].map(({ pairIndex, side, player }) => {
+                  const value = scrambleDriveCounts[pairIndex]?.[side] || 0;
+                  const complete = value >= 6;
 
-                <div
-                  className="handicap-box"
-                  style={{
-                    border: driveBComplete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
-                    borderRadius: "12px",
-                    padding: "12px",
-                    background: driveBComplete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
-                  }}
-                >
-                  <label>{matchup.sideAPlayers[1]} drives used</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="18"
-                    value={driveInfo?.b || 0}
-                    onChange={(event) => updateDriveCount(String(matchup.pairIndex), "b", event.target.value)}
-                  />
-                  <p style={{ margin: "8px 0 0", fontWeight: 800, color: driveBComplete ? "#0c6a36" : "#a3162d" }}>
-                    {driveBComplete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(driveInfo?.b || 0))} more`}
-                  </p>
-                </div>
+                  return (
+                    <div
+                      key={`${pairIndex}-${side}-${player}`}
+                      className="handicap-box"
+                      style={{
+                        border: complete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
+                        borderRadius: "12px",
+                        padding: "12px",
+                        background: complete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
+                      }}
+                    >
+                      <label>{player} drives used</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="18"
+                        value={value}
+                        onChange={(event) => updateDriveCount(pairIndex, side, event.target.value)}
+                      />
+                      <p
+                        style={{
+                          margin: "8px 0 0",
+                          fontWeight: 800,
+                          color: complete ? "#0c6a36" : "#a3162d"
+                        }}
+                      >
+                        {complete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(value))} more`}
+                      </p>
+                    </div>
+                  );
+                })}
               </div>
             </section>
           </>
