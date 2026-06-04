@@ -3841,3 +3841,115 @@ select {
     color: #ffffff !important;
   }
 }
+/* ===== REAL TOP HEADER FIX — MATCHES CURRENT APPSHELL ===== */
+
+.rc-topline-fixed {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.rc-score-header-fixed {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 42, 34, 0.08) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+  padding: 14px 16px !important;
+}
+
+.scoreboard-race {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.scoreboard-race strong {
+  display: block;
+  font-size: 1.08rem;
+  line-height: 1;
+  font-weight: 900;
+  color: #123326;
+}
+
+.scoreboard-race span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: rgba(18, 51, 38, 0.58);
+}
+
+.scoreboard-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.scoreboard-team {
+  min-width: 0;
+}
+
+.scoreboard-team-left {
+  text-align: left;
+}
+
+.scoreboard-team-right {
+  text-align: right;
+}
+
+.scoreboard-team-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scoreboard-team-brand-right {
+  justify-content: flex-end;
+}
+
+.scoreboard-team-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.05;
+}
+
+.scoreboard-team-copy span {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #123326;
+}
+
+.scoreboard-team-copy small {
+  font-size: 0.68rem;
+  line-height: 1.02;
+  color: rgba(18, 51, 38, 0.6);
+}
+
+.scoreboard-team-copy-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.scoreboard-team-win {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.scoreboard-team-win-right {
+  justify-content: flex-end;
+}
+
+.scoreboard-team-win strong {
+  font-size: 1.9rem;
+  line-height: 1;
+  color: #123326;
+}
+
+.scoreboard-team-win span {
+  font-size: 0.88rem;
+  font-weight
