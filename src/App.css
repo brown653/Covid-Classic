@@ -3149,3 +3149,79 @@ select {
     line-height: 1.12;
   }
 }
+@media (max-width: 768px) {
+  .rc-page,
+  body {
+    background: #f3f0e6 !important;
+    background-image: none !important;
+    color: #0f2a22 !important;
+  }
+
+  .main-card,
+  .rc-session-card,
+  .matchup-card,
+  .setup-round,
+  .entry-picker,
+  .phone-scorecard,
+  .match-detail-center,
+  .match-detail-team,
+  .rc-roster-card,
+  .rc-round-summary,
+  .rc-score-header {
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.08) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .rc-brand {
+    font-size: 0.82rem !important;
+    line-height: 1.05 !important;
+    max-width: 170px;
+    color: #234236 !important;
+  }
+
+  .rc-score-bar-score {
+    color: #fff !important;
+  }
+
+  .rc-nav button,
+  .rc-session-tabs button {
+    background: rgba(255, 255, 255, 0.96) !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.1) !important;
+  }
+
+  .rc-nav button.active,
+  .rc-session-tabs button.active {
+    background: #0f3d2e !important;
+    color: #fff !important;
+  }
+
+  .score-input,
+  input,
+  select {
+    background: #fff !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.14) !important;
+  }
+
+  .rc-match-center,
+  .rc-match-center strong,
+  .rc-match-center p,
+  .rc-points-row span {
+    color: #0f2a22 !important;
+  }
+
+  .rc-match-side,
+  .rc-match-side .rc-avatar-card small {
+    color: #fff !important;
+  }
+
+  .rc-player-dot,
+  .team-badge-fallback {
+    color: #0f2a22 !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    border-color: rgba(15, 42, 34, 0.35) !important;
+  }
+}
