@@ -3225,3 +3225,73 @@ select {
     border-color: rgba(15, 42, 34, 0.35) !important;
   }
 }
+/* ===== READABILITY FIXES ===== */
+
+/* match card center pills */
+.rc-points-row span {
+  color: #ffffff !important;
+  background: #0f5a38 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+/* match card center text */
+.rc-match-center,
+.rc-match-center p,
+.rc-match-center strong {
+  color: #123326 !important;
+}
+
+/* keep side panels readable */
+.rc-match-side,
+.rc-match-side * {
+  color: #ffffff !important;
+}
+
+/* scorecard table dark sections */
+.scorecard thead th {
+  color: #ffffff !important;
+}
+
+.scorecard .divider td,
+.scorecard .result-row td {
+  color: #ffffff !important;
+}
+
+/* this fixes the TEAM 1 PAIR 1 green divider row specifically */
+.scorecard tbody tr.divider td {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em;
+}
+
+/* if any dark/named rows are still hard to read */
+.scorecard th,
+.scorecard td {
+  color: #123326;
+}
+
+/* but preserve white text on dark rows */
+.scorecard thead th,
+.scorecard .divider td,
+.scorecard .result-row td {
+  color: #ffffff !important;
+}
+
+/* mobile-specific extra contrast */
+@media (max-width: 768px) {
+  .rc-points-row span {
+    color: #ffffff !important;
+    background: #0f5a38 !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+  }
+
+  .scorecard thead th {
+    color: #ffffff !important;
+  }
+
+  .scorecard .divider td,
+  .scorecard .result-row td {
+    color: #ffffff !important;
+  }
+}
