@@ -41,9 +41,33 @@ const TEAM_BRANDING = {
     name: "Weapons of Grass Destruction",
     subtitle: "(W.O.G.D.)",
     captain: "Matt Brooks",
-    members: ["Chas Mayer", "Mike Luddy", "Kevin Gilmore"],
+    members: ["Charles Mayer", "Kevin Gilmore", "Jason Spendley"],
     logo: "/logos/weapons-of-grass-clean.png",
   },
+};
+
+const LOCKED_TEAM_1 = ["Al Brown", "Mike Luddy", "Mike Paladino", "Pat Lavelle"];
+const LOCKED_TEAM_2 = ["Charles Mayer", "Kevin Gilmore", "Jason Spendley", "Matt Brooks"];
+
+const DEFAULT_TEAMS = {
+  1: [
+    [LOCKED_TEAM_1[0], LOCKED_TEAM_1[1]],
+    [LOCKED_TEAM_1[2], LOCKED_TEAM_1[3]],
+    [LOCKED_TEAM_2[0], LOCKED_TEAM_2[1]],
+    [LOCKED_TEAM_2[2], LOCKED_TEAM_2[3]],
+  ],
+  2: [
+    [LOCKED_TEAM_1[0], LOCKED_TEAM_1[1]],
+    [LOCKED_TEAM_1[2], LOCKED_TEAM_1[3]],
+    [LOCKED_TEAM_2[0], LOCKED_TEAM_2[1]],
+    [LOCKED_TEAM_2[2], LOCKED_TEAM_2[3]],
+  ],
+  3: [
+    [LOCKED_TEAM_1[0], LOCKED_TEAM_2[0]],
+    [LOCKED_TEAM_1[1], LOCKED_TEAM_2[1]],
+    [LOCKED_TEAM_1[2], LOCKED_TEAM_2[2]],
+    [LOCKED_TEAM_1[3], LOCKED_TEAM_2[3]],
+  ],
 };
 
 const JACK_FROST = {
@@ -171,26 +195,18 @@ function App() {
     "1": { a: 0, b: 0 },
   });
 
-  const [teams, setTeams] = useState({
-    1: [
-      ["Al Brown", "Charles Mayer"],
-      ["Mike Luddy", "Mike Paladino"],
-      ["Kevin Gilmore", "Jason Spendley"],
-      ["Matt Brooks", "Pat Lavelle"],
-    ],
-    2: [
-      ["Al Brown", "Charles Mayer"],
-      ["Mike Luddy", "Mike Paladino"],
-      ["Kevin Gilmore", "Jason Spendley"],
-      ["Matt Brooks", "Pat Lavelle"],
-    ],
-    3: [
-      ["Al Brown", "Kevin Gilmore"],
-      ["Charles Mayer", "Jason Spendley"],
-      ["Mike Luddy", "Matt Brooks"],
-      ["Mike Paladino", "Pat Lavelle"],
-    ],
+  const [teams, setTeams] = useState(() => {
+    try {
+      const saved = localStorage.getItem("covid-classic-matchups");
+      return saved ? JSON.parse(saved) : DEFAULT_TEAMS;
+    } catch {
+      return DEFAULT_TEAMS;
+    }
   });
+
+  useEffect(() => {
+    localStorage.setItem("covid-classic-matchups", JSON.stringify(teams));
+  }, [teams]);
 
   useEffect(() => {
     async function loadScores() {
@@ -825,18 +841,6 @@ function App() {
     updatedPlayers[index] = newName;
     setPlayers(updatedPlayers);
 
-    setTeams((previousTeams) => {
-      const updatedTeams = { ...previousTeams };
-
-      Object.keys(updatedTeams).forEach((roundId) => {
-        updatedTeams[roundId] = updatedTeams[roundId].map((team) =>
-          team.map((player) => (player === oldName ? newName : player))
-        );
-      });
-
-      return updatedTeams;
-    });
-
     if (selectedPlayer === oldName) {
       setSelectedPlayer(newName);
     }
@@ -856,47 +860,6 @@ function App() {
 
       return updatedTeams;
     });
-  }
-
-  function getTeamRosters() {
-    return {
-      team1: [...teams[1][0], ...teams[1][1]],
-      team2: [...teams[1][2], ...teams[1][3]],
-    };
-  }
-
-  function updateTeamRoster(teamName, slotIndex, value) {
-    const rosters = getTeamRosters();
-
-    const nextTeam1 = [...rosters.team1];
-    const nextTeam2 = [...rosters.team2];
-
-    if (teamName === "team1") {
-      nextTeam1[slotIndex] = value;
-    } else {
-      nextTeam2[slotIndex] = value;
-    }
-
-    setTeams((previousTeams) => ({
-      ...previousTeams,
-      1: [
-        [nextTeam1[0], nextTeam1[1]],
-        [nextTeam1[2], nextTeam1[3]],
-        [nextTeam2[0], nextTeam2[1]],
-        [nextTeam2[2], nextTeam2[3]],
-      ],
-    }));
-  }
-
-  function updateDriveCount(pairIndex, side, value) {
-    const clean = Math.max(0, Number(value || 0));
-    setScrambleDriveCounts((prev) => ({
-      ...prev,
-      [pairIndex]: {
-        ...prev[pairIndex],
-        [side]: clean,
-      },
-    }));
   }
 
   function renderScorecardRow(roundId, player, context = null) {
@@ -1113,12 +1076,12 @@ function App() {
   }
 
   function AppShell({ children }) {
+    const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
+    const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
     const leadPercent = Math.max(
       0,
       Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
     );
-    const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
-    const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
 
     return (
       <div className="rc-page">
@@ -1130,43 +1093,39 @@ function App() {
         </div>
 
         <header className="rc-score-header">
-          <div className="rc-score-meta">
-            <div className="rc-team-meta rc-team-one branded-team">
-              <div className="team-meta-top">
+          <div className="rc-score-meta improved-score-meta">
+            <div className="score-team-card left">
+              <div className="score-team-brand">
                 <TeamLogo
                   src={TEAM_BRANDING.team1.logo}
                   alt={TEAM_BRANDING.team1.name}
-                  size={44}
+                  size={40}
                 />
-                <div className="team-meta-copy">
+                <div className="score-team-copy">
                   <span>{TEAM_BRANDING.team1.name}</span>
-                  {TEAM_BRANDING.team1.subtitle && (
-                    <small>{TEAM_BRANDING.team1.subtitle}</small>
-                  )}
+                  <small>{TEAM_BRANDING.team1.subtitle}</small>
                 </div>
               </div>
-              <strong>{formatPoints(team1Needed)}</strong>
-              <small>more to win</small>
+              <div className="score-team-winline">
+                <strong>{formatPoints(team1Needed)}</strong>
+                <span>more to win</span>
+              </div>
             </div>
 
-            <div className="rc-race-meta">
+            <div className="score-race-card">
               <strong>Race to {RACE_TO}</strong>
-              <span>
-                {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
-              </span>
+              <span>{formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed</span>
             </div>
 
-            <div className="rc-team-meta rc-team-two branded-team">
-              <div className="team-meta-top">
-                <div className="team-meta-copy align-right">
-                  <span>{TEAM_BRANDING.team2.name || "Team 2"}</span>
-                  {TEAM_BRANDING.team2.subtitle && (
-                    <small>{TEAM_BRANDING.team2.subtitle}</small>
-                  )}
-                </div>
+            <div className="score-team-card right">
+              <div className="score-team-copy right-align">
+                <span>{TEAM_BRANDING.team2.name}</span>
+                <small>{TEAM_BRANDING.team2.subtitle}</small>
               </div>
-              <strong>{formatPoints(team2Needed)}</strong>
-              <small>more to win</small>
+              <div className="score-team-winline">
+                <strong>{formatPoints(team2Needed)}</strong>
+                <span>more to win</span>
+              </div>
             </div>
           </div>
 
@@ -1200,7 +1159,7 @@ function App() {
     return (
       <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
-          <TeamBadge teamKey="team1" fallback="T1" size={42} />
+          <div className="rc-player-dot">T1</div>
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
           </div>
@@ -1220,7 +1179,7 @@ function App() {
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
           </div>
-          <TeamBadge teamKey="team2" fallback="T2" size={42} />
+          <div className="rc-player-dot">T2</div>
         </div>
 
         <div className="rc-hole-strip">
@@ -1321,14 +1280,19 @@ function App() {
             <span>
               Captain: {TEAM_BRANDING.team1.captain}
               <br />
-              {[...teams[1][0], ...teams[1][1]].join(" · ")}
+              {LOCKED_TEAM_1.join(" · ")}
             </span>
           </div>
 
           <div className="rc-roster-card blue branded-roster-card">
             <div className="roster-brand-head">
+              <TeamLogo
+                src={TEAM_BRANDING.team2.logo}
+                alt={TEAM_BRANDING.team2.name}
+                size={52}
+              />
               <div>
-                <p>{TEAM_BRANDING.team2.name || "Team 2"}</p>
+                <p>{TEAM_BRANDING.team2.name}</p>
                 {TEAM_BRANDING.team2.subtitle && (
                   <small>{TEAM_BRANDING.team2.subtitle}</small>
                 )}
@@ -1336,7 +1300,11 @@ function App() {
               </div>
             </div>
 
-            <span>{[...teams[1][2], ...teams[1][3]].join(" · ")}</span>
+            <span>
+              Captain: {TEAM_BRANDING.team2.captain}
+              <br />
+              {LOCKED_TEAM_2.join(" · ")}
+            </span>
           </div>
         </section>
       </>
@@ -1493,8 +1461,6 @@ function App() {
   }
 
   function SetupView() {
-    const rosters = getTeamRosters();
-
     return (
       <>
         <section className="main-card">
@@ -1528,65 +1494,32 @@ function App() {
         <section className="main-card">
           <div className="section-title">
             <div>
-              <p>Setup</p>
-              <h2>Player Names</h2>
-            </div>
-          </div>
-
-          <div className="players-grid">
-            {players.map((player, index) => (
-              <input
-                key={index}
-                value={player}
-                onChange={(event) => updatePlayer(index, event.target.value)}
-              />
-            ))}
-          </div>
-        </section>
-
-        <section className="main-card">
-          <div className="section-title">
-            <div>
-              <p>Setup</p>
-              <h2>4-Person Teams</h2>
+              <p>Teams</p>
+              <h2>Locked 4-Person Teams</h2>
             </div>
           </div>
 
           <div className="setup-grid">
             <div className="setup-round">
-              <h3>Team 1</h3>
-              <div className="players-grid">
-                {rosters.team1.map((player, index) => (
-                  <select
-                    key={`team1-${index}`}
-                    value={player}
-                    onChange={(event) => updateTeamRoster("team1", index, event.target.value)}
-                  >
-                    {players.map((playerOption) => (
-                      <option key={playerOption} value={playerOption}>
-                        {playerOption}
-                      </option>
-                    ))}
-                  </select>
+              <h3>{TEAM_BRANDING.team1.name}</h3>
+              <span>Captain: {TEAM_BRANDING.team1.captain}</span>
+              <div className="players-grid readonly-grid">
+                {LOCKED_TEAM_1.map((player) => (
+                  <div key={player} className="readonly-player">
+                    {player}
+                  </div>
                 ))}
               </div>
             </div>
 
             <div className="setup-round">
-              <h3>Team 2</h3>
-              <div className="players-grid">
-                {rosters.team2.map((player, index) => (
-                  <select
-                    key={`team2-${index}`}
-                    value={player}
-                    onChange={(event) => updateTeamRoster("team2", index, event.target.value)}
-                  >
-                    {players.map((playerOption) => (
-                      <option key={playerOption} value={playerOption}>
-                        {playerOption}
-                      </option>
-                    ))}
-                  </select>
+              <h3>{TEAM_BRANDING.team2.name}</h3>
+              <span>Captain: {TEAM_BRANDING.team2.captain}</span>
+              <div className="players-grid readonly-grid">
+                {LOCKED_TEAM_2.map((player) => (
+                  <div key={player} className="readonly-player">
+                    {player}
+                  </div>
                 ))}
               </div>
             </div>
@@ -1613,6 +1546,10 @@ function App() {
                       {round.format === "Singles Matches"
                         ? `Match ${teamIndex + 1}`
                         : round.id === 1
+                        ? teamIndex < 2
+                          ? `Team 1 Pair ${teamIndex + 1}`
+                          : `Team 2 Pair ${teamIndex - 1}`
+                        : round.id === 2
                         ? teamIndex < 2
                           ? `Team 1 Pair ${teamIndex + 1}`
                           : `Team 2 Pair ${teamIndex - 1}`
@@ -1649,7 +1586,6 @@ function App() {
     const round = rounds.find((item) => item.id === matchup.roundId);
     const course = getCourse(matchup.roundId);
     const summary = getMatchupSummary(matchup);
-    const detailLeader = getMatchLeader(matchup);
 
     const outPar = course.par.slice(0, 9).reduce((sum, par) => sum + par, 0);
     const inPar = course.par.slice(9, 18).reduce((sum, par) => sum + par, 0);
@@ -1666,19 +1602,21 @@ function App() {
           <button onClick={() => resetRound(matchup.roundId)}>Reset Round</button>
         </div>
 
-        <section className={`detail-hero leader-${detailLeader}`}>
-          <div className="detail-side detail-side-red">
-            <TeamBadge teamKey="team1" fallback="T1" size={58} />
-            <div>
-              <p>{matchup.sideAName}</p>
-              <h2>{matchup.sideAPlayers.join(" / ")}</h2>
+        <section className="match-detail-shell">
+          <div className="match-detail-team team1">
+            <div className="match-detail-team-head">
+              <TeamLogo src={TEAM_BRANDING.team1.logo} alt={TEAM_BRANDING.team1.name} size={34} />
+              <div>
+                <p>{matchup.sideAName}</p>
+                <h2>{matchup.sideAPlayers.join(" / ")}</h2>
+              </div>
             </div>
           </div>
 
-          <div className={`detail-center ${detailLeader === "team1" ? "red-leader" : detailLeader === "team2" ? "blue-leader" : "tie-leader"}`}>
+          <div className="match-detail-center">
             <p>{round.name} · {round.format}</p>
             <strong>{summary.status}</strong>
-            <div className="detail-score-boxes">
+            <div className="match-detail-score-row">
               <div>
                 <span>Front</span>
                 <b>{summary.front.teamAScore}-{summary.front.teamBScore}</b>
@@ -1694,12 +1632,14 @@ function App() {
             </div>
           </div>
 
-          <div className="detail-side detail-side-blue">
-            <div>
-              <p>{matchup.sideBName}</p>
-              <h2>{matchup.sideBPlayers.join(" / ")}</h2>
+          <div className="match-detail-team team2">
+            <div className="match-detail-team-head right">
+              <div>
+                <p>{matchup.sideBName}</p>
+                <h2>{matchup.sideBPlayers.join(" / ")}</h2>
+              </div>
+              <TeamLogo src={TEAM_BRANDING.team2.logo} alt={TEAM_BRANDING.team2.name} size={34} />
             </div>
-            <TeamBadge teamKey="team2" fallback="T2" size={58} />
           </div>
         </section>
 
