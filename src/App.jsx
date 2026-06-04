@@ -35,7 +35,7 @@ const TEAM_BRANDING = {
     subtitle: "(feat. Wyclef Green)",
     captain: "Mike Paladino",
     members: ["Al Brown", "Mike Luddy", "Pat Lavelle"],
-    logo: "/logos/chips-dont-lie.png",
+    logo: "/logos/chips-dont-lie-clean.png",
   },
   team2: {
     name: "Team 2",
@@ -1136,7 +1136,7 @@ function App() {
                 <TeamLogo
                   src={TEAM_BRANDING.team1.logo}
                   alt={TEAM_BRANDING.team1.name}
-                  size={54}
+                  size={44}
                 />
                 <div className="team-meta-copy">
                   <span>{TEAM_BRANDING.team1.name}</span>
