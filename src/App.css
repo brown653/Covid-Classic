@@ -4195,3 +4195,18 @@ select {
 .rc-match-side.leading .rc-avatar-card small {
   color: #ffffff !important;
 }
+/* ===== FORCE ALL PLAYER NAMES DARK BY DEFAULT ===== */
+.rc-avatar-card small,
+.rc-avatar-row .rc-avatar-card small,
+.rc-side-content .rc-avatar-card small {
+  color: #173328 !important;
+  font-weight: 800 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* only make names white when they sit on the dark green leading side */
+.rc-match-side.leading .rc-avatar-card small,
+.rc-match-side.rc-side-red.leading .rc-avatar-card small {
+  color: #ffffff !important;
+}
