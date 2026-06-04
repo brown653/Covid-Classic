@@ -38,11 +38,11 @@ const TEAM_BRANDING = {
     logo: "/logos/chips-dont-lie-clean.png",
   },
   team2: {
-    name: "Team 2",
-    subtitle: "",
-    captain: "",
-    members: [],
-    logo: "",
+    name: "Weapons of Grass Destruction",
+    subtitle: "(W.O.G.D.)",
+    captain: "Matt Brooks",
+    members: ["Chas Mayer", "Mike Luddy", "Kevin Gilmore"],
+    logo: "/logos/weapons-of-grass-clean.png",
   },
 };
 
