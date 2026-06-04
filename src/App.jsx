@@ -1076,90 +1076,39 @@ function App() {
   }
 
   function AppShell({ children }) {
-    const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
-    const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
-    const leadPercent = Math.max(
-      0,
-      Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
-    );
+  const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
+  const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
+  const leadPercent = Math.max(
+    0,
+    Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
+  );
 
-    return (
-      <div className="rc-page">
-        <div className="rc-topline">
-          <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
-          <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
-            {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
-          </div>
+  return (
+    <div className="rc-page">
+      <div className="rc-topline mobile-topline-clean">
+        <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
+        <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
+          {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
+        </div>
+      </div>
+
+      <header className="rc-score-header mobile-score-header-clean">
+        <div className="mobile-race-row-clean">
+          <strong>Race to {RACE_TO}</strong>
+          <span>
+            {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
+          </span>
         </div>
 
-        <header className="rc-score-header dark-score-header">
-          <div className="mobile-score-stack">
-            <div className="mobile-race-row">
-              <strong>Race to {RACE_TO}</strong>
-              <span>
-                {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
-              </span>
-            </div>
-
-            <div className="mobile-team-row">
-              <div className="mobile-team-card left">
-                <div className="mobile-team-brand">
-                  <TeamLogo
-                    src={TEAM_BRANDING.team1.logo}
-                    alt={TEAM_BRANDING.team1.name}
-                    size={38}
-                  />
-                  <div className="mobile-team-copy">
-                    <span>{TEAM_BRANDING.team1.name}</span>
-                    <small>{TEAM_BRANDING.team1.subtitle}</small>
-                  </div>
-                </div>
-                <div className="mobile-team-win">
-                  <strong>{formatPoints(team1Needed)}</strong>
-                  <span>more to win</span>
-                </div>
-              </div>
-
-              <div className="mobile-team-card right">
-                <div className="mobile-team-brand right">
-                  <div className="mobile-team-copy right">
-                    <span>{TEAM_BRANDING.team2.name}</span>
-                    <small>{TEAM_BRANDING.team2.subtitle}</small>
-                  </div>
-                  <TeamLogo
-                    src={TEAM_BRANDING.team2.logo}
-                    alt={TEAM_BRANDING.team2.name}
-                    size={38}
-                  />
-                </div>
-                <div className="mobile-team-win right">
-                  <strong>{formatPoints(team2Needed)}</strong>
-                  <span>more to win</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="rc-score-bar" aria-label="Weekend score progress">
-            <div className="rc-score-bar-red" style={{ width: `${leadPercent}%` }} />
-            <div className="rc-score-bar-score rc-left-score">{formatPoints(weekendScore.team1)}</div>
-            <div className="rc-score-bar-score rc-right-score">{formatPoints(weekendScore.team2)}</div>
-          </div>
-        </header>
-
-        {!selectedMatchup && (
-          <nav className="rc-nav">
-            <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Scoring</button>
-            <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>Enter Scores</button>
-            <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>All Matches</button>
-            <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>Setup</button>
-          </nav>
-        )}
-
-        {children}
-      </div>
-    );
-  }
+        <div className="mobile-team-stack-clean">
+          <div className="mobile-team-block-clean">
+            <div className="mobile-team-brand-clean">
+              <TeamLogo
+                src={TEAM_BRANDING.team1.logo}
+                alt={TEAM_BRANDING.team1.name}
+                size={32}
+              />
+              <div className="mobile-team
 
   function RyderMatchCard({ matchup, matchNumber }) {
     const summary = getMatchupSummary(matchup);
