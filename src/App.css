@@ -2766,3 +2766,158 @@ button { cursor: pointer; }
     font-size: 0.95rem;
   }
 }
+/* ===== LIGHT THEME RESET ===== */
+
+.rc-page,
+.main-card,
+.rc-session-card,
+.matchup-card,
+.setup-round,
+.entry-picker,
+.phone-scorecard,
+.match-detail-center,
+.match-detail-team,
+.rc-roster-card,
+.rc-round-summary {
+  color: #0f2a22;
+}
+
+.main-card,
+.rc-session-card,
+.matchup-card,
+.setup-round,
+.entry-picker,
+.phone-scorecard,
+.match-detail-center,
+.match-detail-team,
+.rc-roster-card,
+.rc-round-summary {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(15, 42, 34, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+.section-title p,
+.group-head span,
+.matchup-card p,
+.setup-note,
+.phone-card-head p,
+.phone-card-head span,
+.match-detail-center p,
+.match-detail-team-head p,
+.rc-round-summary p,
+.rc-round-summary span,
+.rc-points-row span,
+.mobile-team-copy small,
+.mobile-race-row span {
+  color: rgba(15, 42, 34, 0.62);
+}
+
+.rc-nav button,
+.rc-session-tabs button {
+  background: rgba(255, 255, 255, 0.94);
+  color: #0f2a22;
+  border: 1px solid rgba(15, 42, 34, 0.1);
+}
+
+.rc-nav button.active,
+.rc-session-tabs button.active {
+  background: #0f3d2e;
+  color: #fff;
+}
+
+.score-input,
+input,
+select {
+  background: #fff;
+  color: #0f2a22;
+  border: 1px solid rgba(15, 42, 34, 0.14);
+}
+
+.scorecard-wrap,
+.scorecard,
+.scorecard thead th,
+.scorecard tbody td {
+  color: #0f2a22;
+}
+
+.divider td,
+.result-row td {
+  color: #fff;
+}
+
+.dark-score-header {
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(15, 42, 34, 0.08);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* ===== REMOVE MOBILE BACKGROUND IMAGE ===== */
+
+@media (max-width: 768px) {
+  .rc-page {
+    background-image: none !important;
+    background: #f3f0e6 !important;
+  }
+
+  body {
+    background-image: none !important;
+    background: #f3f0e6 !important;
+  }
+
+  .mobile-score-stack {
+    gap: 10px;
+  }
+
+  .mobile-race-row {
+    text-align: center;
+  }
+
+  .mobile-team-row {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mobile-team-card,
+  .mobile-team-card.right {
+    align-items: stretch;
+    text-align: left;
+  }
+
+  .mobile-team-brand,
+  .mobile-team-brand.right {
+    justify-content: flex-start;
+  }
+
+  .mobile-team-copy,
+  .mobile-team-copy.right {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .mobile-team-copy span {
+    font-size: 0.84rem;
+    line-height: 1.1;
+  }
+
+  .mobile-team-copy small {
+    font-size: 0.64rem;
+    line-height: 1.1;
+  }
+
+  .mobile-team-win,
+  .mobile-team-win.right {
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .mobile-team-win strong {
+    font-size: 1.85rem;
+    line-height: 1;
+  }
+
+  .mobile-team-win span {
+    font-size: 0.84rem;
+  }
+}
