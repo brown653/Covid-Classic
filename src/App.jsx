@@ -29,6 +29,23 @@ const PLAYER_PHOTOS = {
   "Pat Lavelle": "/avatars/pat-lavelle.jpg",
 };
 
+const TEAM_BRANDING = {
+  team1: {
+    name: "Chips Don't Lie",
+    subtitle: "dt. Wyclef Green",
+    captain: "Mike Paladino",
+    members: ["Al Brown", "Mike Luddy", "Pat Lavelle"],
+    logo: "/logos/chips-dont-lie.png",
+  },
+  team2: {
+    name: "Team 2",
+    subtitle: "",
+    captain: "",
+    members: [],
+    logo: "",
+  },
+};
+
 const JACK_FROST = {
   name: "Jack Frost National",
   par: [4, 4, 3, 5, 4, 4, 4, 3, 5, 4, 3, 5, 4, 4, 4, 3, 4, 5],
@@ -89,6 +106,29 @@ function formatPoints(value) {
 
 function roundHalfUp(value) {
   return Math.floor(value + 0.5);
+}
+
+function TeamLogo({ src, alt, size = 56 }) {
+  if (!src) {
+    return (
+      <div
+        className="team-logo-fallback"
+        style={{ width: size, height: size }}
+        aria-label={alt}
+      >
+        {alt?.slice(0, 2).toUpperCase() || "T"}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className="team-logo"
+      src={src}
+      alt={alt}
+      style={{ width: size, height: size }}
+    />
+  );
 }
 
 function App() {
@@ -1066,21 +1106,42 @@ function App() {
 
         <header className="rc-score-header">
           <div className="rc-score-meta">
-            <div className="rc-team-meta rc-team-one">
-              <span>Team 1</span>
+            <div className="rc-team-meta rc-team-one branded-team">
+              <div className="team-meta-top">
+                <TeamLogo
+                  src={TEAM_BRANDING.team1.logo}
+                  alt={TEAM_BRANDING.team1.name}
+                  size={54}
+                />
+                <div className="team-meta-copy">
+                  <span>{TEAM_BRANDING.team1.name}</span>
+                  {TEAM_BRANDING.team1.subtitle && (
+                    <small>{TEAM_BRANDING.team1.subtitle}</small>
+                  )}
+                </div>
+              </div>
               <strong>{formatPoints(team1Needed)}</strong>
               <small>more to win</small>
             </div>
 
             <div className="rc-race-meta">
               <strong>Race to {RACE_TO}</strong>
-              <span>{formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed</span>
+              <span>
+                {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
+              </span>
             </div>
 
-            <div className="rc-team-meta rc-team-two">
-              <small>more to win</small>
+            <div className="rc-team-meta rc-team-two branded-team">
+              <div className="team-meta-top">
+                <div className="team-meta-copy align-right">
+                  <span>{TEAM_BRANDING.team2.name || "Team 2"}</span>
+                  {TEAM_BRANDING.team2.subtitle && (
+                    <small>{TEAM_BRANDING.team2.subtitle}</small>
+                  )}
+                </div>
+              </div>
               <strong>{formatPoints(team2Needed)}</strong>
-              <span>Team 2</span>
+              <small>more to win</small>
             </div>
           </div>
 
@@ -1216,19 +1277,40 @@ function App() {
         </section>
 
         <section className="rc-team-footer">
-          <div className="rc-roster-card red">
-            <div>
-              <p>Team 1</p>
-              <strong>{formatPoints(weekendScore.team1)}</strong>
+          <div className="rc-roster-card red branded-roster-card">
+            <div className="roster-brand-head">
+              <TeamLogo
+                src={TEAM_BRANDING.team1.logo}
+                alt={TEAM_BRANDING.team1.name}
+                size={52}
+              />
+              <div>
+                <p>{TEAM_BRANDING.team1.name}</p>
+                {TEAM_BRANDING.team1.subtitle && (
+                  <small>{TEAM_BRANDING.team1.subtitle}</small>
+                )}
+                <strong>{formatPoints(weekendScore.team1)}</strong>
+              </div>
             </div>
-            <span>{[...teams[1][0], ...teams[1][1]].join(" · ")}</span>
+
+            <span>
+              Captain: {TEAM_BRANDING.team1.captain}
+              <br />
+              {[...teams[1][0], ...teams[1][1]].join(" · ")}
+            </span>
           </div>
 
-          <div className="rc-roster-card blue">
-            <div>
-              <p>Team 2</p>
-              <strong>{formatPoints(weekendScore.team2)}</strong>
+          <div className="rc-roster-card blue branded-roster-card">
+            <div className="roster-brand-head">
+              <div>
+                <p>{TEAM_BRANDING.team2.name || "Team 2"}</p>
+                {TEAM_BRANDING.team2.subtitle && (
+                  <small>{TEAM_BRANDING.team2.subtitle}</small>
+                )}
+                <strong>{formatPoints(weekendScore.team2)}</strong>
+              </div>
             </div>
+
             <span>{[...teams[1][2], ...teams[1][3]].join(" · ")}</span>
           </div>
         </section>
@@ -1546,11 +1628,6 @@ function App() {
 
     const outPar = course.par.slice(0, 9).reduce((sum, par) => sum + par, 0);
     const inPar = course.par.slice(9, 18).reduce((sum, par) => sum + par, 0);
-
-    const scrambleInfo =
-      matchup.type === "scramble"
-        ? getScrambleMatchStrokeInfo(matchup.sideAPlayers, matchup.sideBPlayers)
-        : null;
 
     const singlesInfo =
       matchup.type === "singles"
