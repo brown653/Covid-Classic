@@ -2921,3 +2921,231 @@ select {
     font-size: 0.84rem;
   }
 }
+/* ===== MOBILE CLEAN RESET ===== */
+
+@media (max-width: 768px) {
+  .rc-page {
+    background: #f3f0e6 !important;
+    background-image: none !important;
+    color: #0f2a22 !important;
+  }
+
+  body {
+    background: #f3f0e6 !important;
+    background-image: none !important;
+    color: #0f2a22 !important;
+  }
+
+  .mobile-topline-clean {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+
+  .rc-brand {
+    font-size: 0.82rem !important;
+    line-height: 1.05 !important;
+    max-width: 170px;
+    color: #234236 !important;
+  }
+
+  .mobile-score-header-clean {
+    background: rgba(255, 255, 255, 0.82) !important;
+    border: 1px solid rgba(15, 42, 34, 0.08) !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08) !important;
+    padding: 12px !important;
+  }
+
+  .mobile-race-row-clean {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 2px;
+    margin-bottom: 12px;
+  }
+
+  .mobile-race-row-clean strong {
+    font-size: 1.05rem;
+    line-height: 1;
+    color: #173328 !important;
+  }
+
+  .mobile-race-row-clean span {
+    font-size: 0.78rem;
+    color: rgba(23, 51, 40, 0.68) !important;
+  }
+
+  .mobile-team-stack-clean {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mobile-team-block-clean {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .mobile-team-brand-clean {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-team-brand-clean.right {
+    justify-content: flex-start;
+  }
+
+  .mobile-team-copy-clean {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.08;
+  }
+
+  .mobile-team-copy-clean.right {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .mobile-team-copy-clean span {
+    font-size: 0.86rem;
+    font-weight: 800;
+    color: #173328 !important;
+  }
+
+  .mobile-team-copy-clean small {
+    font-size: 0.64rem;
+    color: rgba(23, 51, 40, 0.68) !important;
+  }
+
+  .mobile-team-win-clean {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .mobile-team-win-clean.right {
+    justify-content: flex-start;
+  }
+
+  .mobile-team-win-clean strong {
+    font-size: 1.85rem;
+    line-height: 1;
+    color: #1b5e3c !important;
+  }
+
+  .mobile-team-win-clean span {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #173328 !important;
+  }
+
+  .rc-score-bar {
+    margin-top: 12px;
+  }
+
+  .rc-score-bar-score {
+    color: #ffffff !important;
+  }
+
+  /* hard reset for cards/buttons that stayed dark */
+  .main-card,
+  .rc-session-card,
+  .matchup-card,
+  .setup-round,
+  .entry-picker,
+  .phone-scorecard,
+  .match-detail-center,
+  .match-detail-team,
+  .rc-roster-card,
+  .rc-round-summary {
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.08) !important;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+  }
+
+  .section-title p,
+  .group-head span,
+  .matchup-card p,
+  .setup-note,
+  .phone-card-head p,
+  .phone-card-head span,
+  .match-detail-center p,
+  .match-detail-team-head p,
+  .rc-round-summary p,
+  .rc-round-summary span,
+  .rc-points-row span {
+    color: rgba(15, 42, 34, 0.62) !important;
+  }
+
+  .rc-nav button,
+  .rc-session-tabs button {
+    background: rgba(255, 255, 255, 0.96) !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.1) !important;
+  }
+
+  .rc-nav button.active,
+  .rc-session-tabs button.active {
+    background: #0f3d2e !important;
+    color: #ffffff !important;
+  }
+
+  .score-input,
+  input,
+  select {
+    background: #ffffff !important;
+    color: #0f2a22 !important;
+    border: 1px solid rgba(15, 42, 34, 0.14) !important;
+  }
+
+  /* fix unreadable green sections */
+  .rc-match-center,
+  .rc-match-center strong,
+  .rc-match-center p,
+  .rc-points-row span {
+    color: #0f2a22 !important;
+  }
+
+  .rc-match-side {
+    color: #ffffff !important;
+  }
+
+  .rc-match-side .rc-avatar-card small {
+    color: #ffffff !important;
+  }
+
+  .rc-player-dot,
+  .team-badge-fallback {
+    color: #0f2a22 !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    border-color: rgba(15, 42, 34, 0.35) !important;
+  }
+
+  .rc-session-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .rc-session-tabs button {
+    min-width: 0;
+    padding: 10px 8px;
+  }
+
+  .rc-session-tabs button span {
+    font-size: 0.68rem;
+  }
+
+  .rc-session-tabs button strong {
+    font-size: 0.8rem;
+    line-height: 1.12;
+  }
+}
