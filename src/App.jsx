@@ -1075,7 +1075,7 @@ function App() {
     return 1;
   }
 
-  function AppShell({ children }) {
+function AppShell({ children }) {
   const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
   const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
   const leadPercent = Math.max(
@@ -1109,57 +1109,6 @@ function App() {
                 size={32}
               />
               <div className="mobile-team
-
-  function RyderMatchCard({ matchup, matchNumber }) {
-    const summary = getMatchupSummary(matchup);
-    const leader = getMatchLeader(matchup);
-    const resultLabel = getMatchResultLabel(matchup);
-    const holesPlayed = getMatchupSegment(matchup, 1, 18).holesCounted;
-
-    return (
-      <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
-        <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
-          <TeamBadge teamKey="team1" fallback="T1" size={42} />
-          <div className="rc-side-content">
-            <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
-          </div>
-        </div>
-
-        <div className={`rc-match-center ${leader === "team1" ? "red-leader" : leader === "team2" ? "blue-leader" : "tie-leader"}`}>
-          <p>Match {matchNumber} <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span></p>
-          <strong>{resultLabel}</strong>
-          <div className="rc-points-row">
-            <span>Front 9: {getSegmentWinnerLabel(summary.front)}</span>
-            <span>Back 9: {getSegmentWinnerLabel(summary.back)}</span>
-            <span>18 Holes: {getSegmentWinnerLabel(summary.full)}</span>
-          </div>
-        </div>
-
-        <div className={`rc-match-side rc-side-blue ${leader === "team2" ? "leading" : ""}`}>
-          <div className="rc-side-content">
-            <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
-          </div>
-          <TeamBadge teamKey="team2" fallback="T2" size={42} />
-        </div>
-
-        <div className="rc-hole-strip">
-          {Array.from({ length: 18 }, (_, index) => {
-            const hole = index + 1;
-            const result = getHoleResult(matchup, hole);
-            return (
-              <span
-                key={hole}
-                className={`rc-hole-dot ${result === "T1" ? "red" : result === "T2" ? "blue" : result === "E" ? "even" : ""}`}
-              >
-                {hole}
-              </span>
-            );
-          })}
-        </div>
-      </button>
-    );
-  }
-
   function HomeView() {
     const currentRoundId = selectedRoundId || getStartedRoundId();
     const currentGroup = matchupGroups.find((group) => group.roundId === currentRoundId) || matchupGroups[0];
