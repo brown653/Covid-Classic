@@ -1084,7 +1084,7 @@ function App() {
     );
 
     return (
-      <div className="rc-page dark-theme">
+      <div className="rc-page">
         <div className="rc-topline">
           <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
           <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
