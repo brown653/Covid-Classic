@@ -65,8 +65,8 @@ const rounds = [
   },
 ];
 
-const RACE_TO = 6.5;
-const TOTAL_WEEKEND_POINTS = 12;
+const RACE_TO = 16.5;
+const TOTAL_WEEKEND_POINTS = 32;
 
 const FRONT_HOLES = [1, 2, 3, 4, 5, 6, 7, 8, 9];
 const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
@@ -466,26 +466,6 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function getStablefordSideSegment(start, end) {
-    const teamOnePairs = [teams[1][0], teams[1][1]];
-    const teamTwoPairs = [teams[1][2], teams[1][3]];
-
-    let teamAScore = 0;
-    let teamBScore = 0;
-    let holesCounted = 0;
-
-    teamOnePairs.forEach((pairA, index) => {
-      const pairB = teamTwoPairs[index];
-      const result = getStablefordSegment(pairA, pairB, start, end);
-
-      teamAScore += result.teamAScore;
-      teamBScore += result.teamBScore;
-      holesCounted += result.holesCounted;
-    });
-
-    return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
-  }
-
   function getScramblePairSegment(pairA, pairB, start, end) {
     const playerA = pairA[0];
     const playerB = pairB[0];
@@ -507,26 +487,6 @@ function App() {
         holesCounted += 1;
       }
     }
-
-    return { teamAScore, teamBScore, holesCounted, higherIsBetter: false };
-  }
-
-  function getScrambleSideSegment(start, end) {
-    const teamOnePairs = [teams[2][0], teams[2][1]];
-    const teamTwoPairs = [teams[2][2], teams[2][3]];
-
-    let teamAScore = 0;
-    let teamBScore = 0;
-    let holesCounted = 0;
-
-    teamOnePairs.forEach((pairA, index) => {
-      const pairB = teamTwoPairs[index];
-      const result = getScramblePairSegment(pairA, pairB, start, end);
-
-      teamAScore += result.teamAScore;
-      teamBScore += result.teamBScore;
-      holesCounted += result.holesCounted;
-    });
 
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: false };
   }
@@ -553,45 +513,6 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function getSinglesSideSegment(start, end) {
-    let teamAScore = 0;
-    let teamBScore = 0;
-    let holesCounted = 0;
-
-    teams[3].forEach((match) => {
-      const result = getSinglesMatchSegment(match, start, end);
-      teamAScore += result.teamAScore;
-      teamBScore += result.teamBScore;
-      holesCounted += result.holesCounted;
-    });
-
-    return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
-  }
-
-  function getRoundOverallSegments(roundId) {
-    if (roundId === 1) {
-      return {
-        front: getStablefordSideSegment(1, 9),
-        back: getStablefordSideSegment(10, 18),
-        full: getStablefordSideSegment(1, 18),
-      };
-    }
-
-    if (roundId === 2) {
-      return {
-        front: getScrambleSideSegment(1, 9),
-        back: getScrambleSideSegment(10, 18),
-        full: getScrambleSideSegment(1, 18),
-      };
-    }
-
-    return {
-      front: getSinglesSideSegment(1, 9),
-      back: getSinglesSideSegment(10, 18),
-      full: getSinglesSideSegment(1, 18),
-    };
-  }
-
   function awardLivePoint(segment, pointValue = 1) {
     if (!segment.holesCounted) return [0, 0];
 
@@ -607,16 +528,62 @@ function App() {
   }
 
   function getRoundCupPoints(roundId) {
-    const segments = getRoundOverallSegments(roundId);
+    let team1 = 0;
+    let team2 = 0;
 
-    const frontPoints = awardLivePoint(segments.front, 1);
-    const backPoints = awardLivePoint(segments.back, 1);
-    const fullPoints = awardLivePoint(segments.full, 2);
+    if (roundId === 1 || roundId === 2) {
+      const pairings =
+        roundId === 1
+          ? [
+              [teams[1][0], teams[1][2]],
+              [teams[1][1], teams[1][3]],
+            ]
+          : [
+              [teams[2][0], teams[2][2]],
+              [teams[2][1], teams[2][3]],
+            ];
 
-    return {
-      team1: frontPoints[0] + backPoints[0] + fullPoints[0],
-      team2: frontPoints[1] + backPoints[1] + fullPoints[1],
-    };
+      pairings.forEach(([sideA, sideB]) => {
+        const front =
+          roundId === 1
+            ? getStablefordSegment(sideA, sideB, 1, 9)
+            : getScramblePairSegment(sideA, sideB, 1, 9);
+
+        const back =
+          roundId === 1
+            ? getStablefordSegment(sideA, sideB, 10, 18)
+            : getScramblePairSegment(sideA, sideB, 10, 18);
+
+        const full =
+          roundId === 1
+            ? getStablefordSegment(sideA, sideB, 1, 18)
+            : getScramblePairSegment(sideA, sideB, 1, 18);
+
+        const frontPoints = awardLivePoint(front, 1);
+        const backPoints = awardLivePoint(back, 1);
+        const fullPoints = awardLivePoint(full, 2);
+
+        team1 += frontPoints[0] + backPoints[0] + fullPoints[0];
+        team2 += frontPoints[1] + backPoints[1] + fullPoints[1];
+      });
+    }
+
+    if (roundId === 3) {
+      teams[3].forEach((match) => {
+        const front = getSinglesMatchSegment(match, 1, 9);
+        const back = getSinglesMatchSegment(match, 10, 18);
+        const full = getSinglesMatchSegment(match, 1, 18);
+
+        const frontPoints = awardLivePoint(front, 1);
+        const backPoints = awardLivePoint(back, 1);
+        const fullPoints = awardLivePoint(full, 2);
+
+        team1 += frontPoints[0] + backPoints[0] + fullPoints[0];
+        team2 += frontPoints[1] + backPoints[1] + fullPoints[1];
+      });
+    }
+
+    return { team1, team2 };
   }
 
   function getSegmentStatus(segment, labelA = "Team 1", labelB = "Team 2") {
