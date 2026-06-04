@@ -32,7 +32,7 @@ const PLAYER_PHOTOS = {
 const TEAM_BRANDING = {
   team1: {
     name: "Chips Don't Lie",
-    subtitle: "dt. Wyclef Green",
+    subtitle: "(feat. Wyclef Green)",
     captain: "Mike Paladino",
     members: ["Al Brown", "Mike Luddy", "Pat Lavelle"],
     logo: "/logos/chips-dont-lie.png",
@@ -128,6 +128,31 @@ function TeamLogo({ src, alt, size = 56 }) {
       alt={alt}
       style={{ width: size, height: size }}
     />
+  );
+}
+
+function TeamBadge({ teamKey, fallback, size = 54 }) {
+  const team = TEAM_BRANDING[teamKey];
+
+  if (team?.logo) {
+    return (
+      <img
+        className="team-badge-logo"
+        src={team.logo}
+        alt={team.name || fallback}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
+  return (
+    <div
+      className="team-badge-fallback"
+      style={{ width: size, height: size }}
+      aria-label={fallback}
+    >
+      {fallback}
+    </div>
   );
 }
 
@@ -1175,7 +1200,7 @@ function App() {
     return (
       <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
-          <div className="rc-player-dot">T1</div>
+          <TeamBadge teamKey="team1" fallback="T1" size={42} />
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
           </div>
@@ -1195,7 +1220,7 @@ function App() {
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
           </div>
-          <div className="rc-player-dot">T2</div>
+          <TeamBadge teamKey="team2" fallback="T2" size={42} />
         </div>
 
         <div className="rc-hole-strip">
@@ -1643,7 +1668,7 @@ function App() {
 
         <section className={`detail-hero leader-${detailLeader}`}>
           <div className="detail-side detail-side-red">
-            <div className="detail-team-badge">T1</div>
+            <TeamBadge teamKey="team1" fallback="T1" size={58} />
             <div>
               <p>{matchup.sideAName}</p>
               <h2>{matchup.sideAPlayers.join(" / ")}</h2>
@@ -1674,7 +1699,7 @@ function App() {
               <p>{matchup.sideBName}</p>
               <h2>{matchup.sideBPlayers.join(" / ")}</h2>
             </div>
-            <div className="detail-team-badge">T2</div>
+            <TeamBadge teamKey="team2" fallback="T2" size={58} />
           </div>
         </section>
 
