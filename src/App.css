@@ -4183,3 +4183,15 @@ select {
 .rc-side-red .rc-avatar-card small {
   color: #ffffff !important;
 }
+/* ===== AVATAR NAME COLOR FIX ===== */
+
+/* default: dark text */
+.rc-avatar-card small {
+  color: #173328 !important;
+  font-weight: 800 !important;
+}
+
+/* when the side panel is the dark/leading side, switch to white */
+.rc-match-side.leading .rc-avatar-card small {
+  color: #ffffff !important;
+}
