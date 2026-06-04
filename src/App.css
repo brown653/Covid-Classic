@@ -4174,3 +4174,12 @@ select {
     font-size: 1.35rem !important;
   }
 }
+/* ===== PLAYER NAME CONTRAST FIX ===== */
+
+.rc-side-blue .rc-avatar-card small {
+  color: #173328 !important;
+}
+
+.rc-side-red .rc-avatar-card small {
+  color: #ffffff !important;
+}
