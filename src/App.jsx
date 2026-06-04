@@ -594,8 +594,8 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
-  function awardLivePoint(segment, pointValue = 1) {
-    if (!segment.holesCounted) return [0, 0];
+  function awardCompletedPoint(segment, pointValue = 1, requiredHoles = 9) {
+    if (segment.holesCounted < requiredHoles) return [0, 0];
 
     if (segment.teamAScore === segment.teamBScore) {
       return [pointValue / 2, pointValue / 2];
@@ -640,9 +640,9 @@ function App() {
             ? getStablefordSegment(sideA, sideB, 1, 18)
             : getScramblePairSegment(sideA, sideB, 1, 18);
 
-        const frontPoints = awardLivePoint(front, 1);
-        const backPoints = awardLivePoint(back, 1);
-        const fullPoints = awardLivePoint(full, 2);
+        const frontPoints = awardCompletedPoint(front, 1, 9);
+        const backPoints = awardCompletedPoint(back, 1, 9);
+        const fullPoints = awardCompletedPoint(full, 2, 18);
 
         team1 += frontPoints[0] + backPoints[0] + fullPoints[0];
         team2 += frontPoints[1] + backPoints[1] + fullPoints[1];
@@ -655,9 +655,9 @@ function App() {
         const back = getSinglesMatchSegment(match, 10, 18);
         const full = getSinglesMatchSegment(match, 1, 18);
 
-        const frontPoints = awardLivePoint(front, 1);
-        const backPoints = awardLivePoint(back, 1);
-        const fullPoints = awardLivePoint(full, 2);
+        const frontPoints = awardCompletedPoint(front, 1, 9);
+        const backPoints = awardCompletedPoint(back, 1, 9);
+        const fullPoints = awardCompletedPoint(full, 2, 18);
 
         team1 += frontPoints[0] + backPoints[0] + fullPoints[0];
         team2 += frontPoints[1] + backPoints[1] + fullPoints[1];
@@ -1075,89 +1075,91 @@ function App() {
     return 1;
   }
 
-function AppShell({ children }) {
-  const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
-  const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
-  const leadPercent = Math.max(
-    0,
-    Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
-  );
+  function AppShell({ children }) {
+    const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
+    const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
+    const leadPercent = Math.max(
+      0,
+      Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
+    );
 
-  return (
-    <div className="rc-page">
-      <div className="rc-topline">
-        <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
-        <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
-          {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
+    return (
+      <div className="rc-page dark-theme">
+        <div className="rc-topline">
+          <div className="rc-brand">INTERSTATE INVITATIONAL 2026</div>
+          <div className={`rc-live-pill ${connectionStatus === "Live" ? "is-live" : ""}`}>
+            {connectionStatus === "Live" ? "● Live" : `● ${connectionStatus}`}
+          </div>
         </div>
+
+        <header className="rc-score-header dark-score-header">
+          <div className="mobile-score-stack">
+            <div className="mobile-race-row">
+              <strong>Race to {RACE_TO}</strong>
+              <span>
+                {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
+              </span>
+            </div>
+
+            <div className="mobile-team-row">
+              <div className="mobile-team-card left">
+                <div className="mobile-team-brand">
+                  <TeamLogo
+                    src={TEAM_BRANDING.team1.logo}
+                    alt={TEAM_BRANDING.team1.name}
+                    size={38}
+                  />
+                  <div className="mobile-team-copy">
+                    <span>{TEAM_BRANDING.team1.name}</span>
+                    <small>{TEAM_BRANDING.team1.subtitle}</small>
+                  </div>
+                </div>
+                <div className="mobile-team-win">
+                  <strong>{formatPoints(team1Needed)}</strong>
+                  <span>more to win</span>
+                </div>
+              </div>
+
+              <div className="mobile-team-card right">
+                <div className="mobile-team-brand right">
+                  <div className="mobile-team-copy right">
+                    <span>{TEAM_BRANDING.team2.name}</span>
+                    <small>{TEAM_BRANDING.team2.subtitle}</small>
+                  </div>
+                  <TeamLogo
+                    src={TEAM_BRANDING.team2.logo}
+                    alt={TEAM_BRANDING.team2.name}
+                    size={38}
+                  />
+                </div>
+                <div className="mobile-team-win right">
+                  <strong>{formatPoints(team2Needed)}</strong>
+                  <span>more to win</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="rc-score-bar" aria-label="Weekend score progress">
+            <div className="rc-score-bar-red" style={{ width: `${leadPercent}%` }} />
+            <div className="rc-score-bar-score rc-left-score">{formatPoints(weekendScore.team1)}</div>
+            <div className="rc-score-bar-score rc-right-score">{formatPoints(weekendScore.team2)}</div>
+          </div>
+        </header>
+
+        {!selectedMatchup && (
+          <nav className="rc-nav">
+            <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Scoring</button>
+            <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>Enter Scores</button>
+            <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>All Matches</button>
+            <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>Setup</button>
+          </nav>
+        )}
+
+        {children}
       </div>
-
-      <header className="rc-score-header">
-        <div className="rc-score-meta improved-score-meta">
-          <div className="score-team-card left">
-            <div className="score-team-brand">
-              <TeamLogo
-                src={TEAM_BRANDING.team1.logo}
-                alt={TEAM_BRANDING.team1.name}
-                size={38}
-              />
-              <div className="score-team-copy">
-                <span>{TEAM_BRANDING.team1.name}</span>
-                <small>{TEAM_BRANDING.team1.subtitle}</small>
-              </div>
-            </div>
-            <div className="score-team-winline">
-              <strong>{formatPoints(team1Needed)}</strong>
-              <span>more to win</span>
-            </div>
-          </div>
-
-          <div className="score-race-card">
-            <strong>Race to {RACE_TO}</strong>
-            <span>
-              {formatPoints(weekendScore.team1 + weekendScore.team2)} / {TOTAL_WEEKEND_POINTS} points claimed
-            </span>
-          </div>
-
-          <div className="score-team-card right">
-            <div className="score-team-brand right-brand">
-              <div className="score-team-copy right-align">
-                <span>{TEAM_BRANDING.team2.name}</span>
-                <small>{TEAM_BRANDING.team2.subtitle}</small>
-              </div>
-              <TeamLogo
-                src={TEAM_BRANDING.team2.logo}
-                alt={TEAM_BRANDING.team2.name}
-                size={38}
-              />
-            </div>
-            <div className="score-team-winline right-win">
-              <strong>{formatPoints(team2Needed)}</strong>
-              <span>more to win</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="rc-score-bar" aria-label="Weekend score progress">
-          <div className="rc-score-bar-red" style={{ width: `${leadPercent}%` }} />
-          <div className="rc-score-bar-score rc-left-score">{formatPoints(weekendScore.team1)}</div>
-          <div className="rc-score-bar-score rc-right-score">{formatPoints(weekendScore.team2)}</div>
-        </div>
-      </header>
-
-      {!selectedMatchup && (
-        <nav className="rc-nav">
-          <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Scoring</button>
-          <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>Enter Scores</button>
-          <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>All Matches</button>
-          <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>Setup</button>
-        </nav>
-      )}
-
-      {children}
-    </div>
-  );
-}
+    );
+  }
 
   function RyderMatchCard({ matchup, matchNumber }) {
     const summary = getMatchupSummary(matchup);
@@ -1168,7 +1170,7 @@ function AppShell({ children }) {
     return (
       <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
-          <div className="rc-player-dot">T1</div>
+          <TeamBadge teamKey="team1" fallback="T1" size={42} />
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
           </div>
@@ -1188,7 +1190,7 @@ function AppShell({ children }) {
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
           </div>
-          <div className="rc-player-dot">T2</div>
+          <TeamBadge teamKey="team2" fallback="T2" size={42} />
         </div>
 
         <div className="rc-hole-strip">
