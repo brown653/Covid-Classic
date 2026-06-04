@@ -3970,3 +3970,207 @@ select {
     font-size: 0.68rem !important;
   }
 }
+/* ===== FINAL MOBILE SCOREBOARD FIX ===== */
+
+.rc-score-header-fixed {
+  padding: 12px 14px !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  border: 1px solid rgba(15, 42, 34, 0.08) !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08) !important;
+}
+
+.scoreboard-race {
+  text-align: center !important;
+  margin-bottom: 10px !important;
+}
+
+.scoreboard-race strong {
+  display: block !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  color: #173328 !important;
+}
+
+.scoreboard-race span {
+  display: block !important;
+  margin-top: 4px !important;
+  font-size: 0.72rem !important;
+  line-height: 1.1 !important;
+  color: rgba(23, 51, 40, 0.58) !important;
+}
+
+.scoreboard-teams {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+.scoreboard-team {
+  min-width: 0 !important;
+  background: rgba(243, 240, 230, 0.75) !important;
+  border: 1px solid rgba(23, 51, 40, 0.08) !important;
+  border-radius: 12px !important;
+  padding: 10px 8px !important;
+}
+
+.scoreboard-team-left,
+.scoreboard-team-right {
+  text-align: center !important;
+}
+
+.scoreboard-team-brand,
+.scoreboard-team-brand-right {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+.scoreboard-team-copy,
+.scoreboard-team-copy-right {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  line-height: 1.05 !important;
+  min-width: 0 !important;
+}
+
+.scoreboard-team-copy span {
+  font-size: 0.78rem !important;
+  font-weight: 800 !important;
+  color: #173328 !important;
+}
+
+.scoreboard-team-copy small {
+  font-size: 0.56rem !important;
+  color: rgba(23, 51, 40, 0.6) !important;
+}
+
+.scoreboard-team-win,
+.scoreboard-team-win-right {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: baseline !important;
+  gap: 5px !important;
+  margin-top: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+.scoreboard-team-win strong {
+  font-size: 1.55rem !important;
+  line-height: 1 !important;
+  font-weight: 900 !important;
+  color: #173328 !important;
+}
+
+.scoreboard-team-win span {
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  color: #173328 !important;
+}
+
+.rc-score-bar {
+  margin-top: 10px !important;
+}
+
+.rc-score-bar-score {
+  color: #fff !important;
+  font-size: 1.55rem !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 768px) {
+  .rc-topline-fixed {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .rc-brand {
+    max-width: 150px !important;
+    font-size: 0.7rem !important;
+    line-height: 1.02 !important;
+    letter-spacing: 0.14em !important;
+    color: #173328 !important;
+  }
+
+  .rc-live-pill {
+    flex-shrink: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .rc-score-header-fixed {
+    padding: 10px 10px 12px !important;
+  }
+
+  .scoreboard-race {
+    margin-bottom: 8px !important;
+  }
+
+  .scoreboard-race strong {
+    font-size: 0.95rem !important;
+  }
+
+  .scoreboard-race span {
+    font-size: 0.66rem !important;
+  }
+
+  .scoreboard-teams {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  .scoreboard-team {
+    padding: 8px 6px !important;
+    border-radius: 10px !important;
+  }
+
+  .scoreboard-team-brand,
+  .scoreboard-team-brand-right {
+    gap: 5px !important;
+  }
+
+  .scoreboard-team-copy span {
+    font-size: 0.68rem !important;
+    line-height: 1.02 !important;
+  }
+
+  .scoreboard-team-copy small {
+    font-size: 0.5rem !important;
+    line-height: 1 !important;
+  }
+
+  .scoreboard-team-win {
+    gap: 4px !important;
+    margin-top: 4px !important;
+  }
+
+  .scoreboard-team-win strong {
+    font-size: 1.25rem !important;
+  }
+
+  .scoreboard-team-win span {
+    font-size: 0.62rem !important;
+  }
+
+  .team-logo {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .rc-score-bar {
+    margin-top: 8px !important;
+  }
+
+  .rc-score-bar-score {
+    font-size: 1.35rem !important;
+  }
+}
