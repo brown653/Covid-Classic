@@ -1460,3 +1460,179 @@ button { cursor: pointer; }
     font-size: 0.9rem;
   }
 }
+.team-logo {
+  object-fit: contain;
+  display: block;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  box-shadow: none;
+}
+
+.team-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-weight: 800;
+  background: #e9ecef;
+  color: #1f2937;
+}
+
+.team-badge-logo {
+  object-fit: contain;
+  display: block;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.team-badge-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 800;
+  border: 2px solid rgba(0, 34, 20, 0.85);
+  background: rgba(255, 255, 255, 0.85);
+  color: #002214;
+}
+
+.branded-team {
+  gap: 8px;
+}
+
+.team-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-meta-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.team-meta-copy span {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.team-meta-copy small {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.team-meta-copy.align-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.branded-roster-card {
+  gap: 12px;
+}
+
+.roster-brand-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.roster-brand-head p {
+  margin: 0 0 2px;
+  font-weight: 800;
+}
+
+.roster-brand-head small {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.roster-brand-head strong {
+  display: block;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .rc-score-meta {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 14px;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .rc-team-meta {
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .rc-team-meta.rc-team-two {
+    text-align: center;
+  }
+
+  .team-meta-top {
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-meta-copy,
+  .team-meta-copy.align-right {
+    align-items: center;
+    text-align: center;
+  }
+
+  .team-meta-copy span {
+    font-size: 0.82rem;
+  }
+
+  .team-meta-copy small {
+    font-size: 0.66rem;
+  }
+
+  .rc-race-meta {
+    order: -1;
+    text-align: center;
+  }
+
+  .rc-team-meta strong {
+    font-size: 2.1rem;
+    line-height: 1;
+  }
+
+  .rc-team-meta small {
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  .rc-score-header {
+    padding-bottom: 14px;
+  }
+
+  .roster-brand-head {
+    align-items: center;
+  }
+
+  .team-logo {
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .team-badge-logo {
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .team-badge-fallback {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 0.9rem;
+  }
+}
