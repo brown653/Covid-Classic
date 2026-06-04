@@ -1230,3 +1230,103 @@ button { cursor: pointer; }
     font-size: 16px;
   }
 }
+.team-logo {
+  object-fit: contain;
+  display: block;
+  border-radius: 12px;
+  background: #fff;
+  padding: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+}
+
+.team-logo-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  font-weight: 800;
+  background: #e9ecef;
+  color: #1f2937;
+}
+
+.branded-team {
+  gap: 8px;
+}
+
+.team-meta-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.team-meta-copy {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.team-meta-copy span {
+  font-weight: 800;
+  font-size: 0.95rem;
+}
+
+.team-meta-copy small {
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.team-meta-copy.align-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.branded-roster-card {
+  gap: 12px;
+}
+
+.roster-brand-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.roster-brand-head p {
+  margin: 0 0 2px;
+  font-weight: 800;
+}
+
+.roster-brand-head small {
+  display: block;
+  font-size: 0.72rem;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.roster-brand-head strong {
+  display: block;
+  font-size: 1.2rem;
+}
+
+@media (max-width: 768px) {
+  .team-meta-top {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .team-meta-copy span {
+    font-size: 0.82rem;
+  }
+
+  .team-meta-copy small {
+    font-size: 0.66rem;
+  }
+
+  .roster-brand-head {
+    align-items: center;
+  }
+
+  .team-logo {
+    border-radius: 10px;
+    padding: 3px;
+  }
+}
