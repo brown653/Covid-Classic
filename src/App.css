@@ -3707,3 +3707,137 @@ select {
     font-size: 1.6rem !important;
   }
 }
+/* ===== FORCE TOP HEADER FIX ON MOBILE ===== */
+@media (max-width: 768px) {
+  .rc-page,
+  body {
+    background: #f3f0e6 !important;
+    background-image: none !important;
+  }
+
+  .rc-topline {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .rc-brand {
+    max-width: 150px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.02 !important;
+    letter-spacing: 0.14em !important;
+    color: #173328 !important;
+  }
+
+  .rc-live-pill {
+    flex-shrink: 0 !important;
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .rc-score-header {
+    background: rgba(255, 255, 255, 0.94) !important;
+    border: 1px solid rgba(15, 42, 34, 0.08) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08) !important;
+    padding: 12px !important;
+  }
+
+  .rc-score-meta {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    align-items: stretch !important;
+    text-align: left !important;
+  }
+
+  .rc-race-meta {
+    order: -1 !important;
+    text-align: center !important;
+  }
+
+  .rc-race-meta strong {
+    display: block !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+    color: #173328 !important;
+  }
+
+  .rc-race-meta span {
+    display: block !important;
+    margin-top: 4px !important;
+    font-size: 0.72rem !important;
+    color: rgba(23, 51, 40, 0.6) !important;
+  }
+
+  .rc-team-meta {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 6px !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .rc-team-meta.rc-team-two {
+    align-items: flex-start !important;
+    text-align: left !important;
+  }
+
+  .team-meta-top {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .team-meta-copy,
+  .team-meta-copy.align-right {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    text-align: left !important;
+    min-width: 0 !important;
+  }
+
+  .team-meta-copy span {
+    font-size: 0.8rem !important;
+    line-height: 1.05 !important;
+    color: #173328 !important;
+    font-weight: 800 !important;
+  }
+
+  .team-meta-copy small {
+    font-size: 0.6rem !important;
+    line-height: 1.02 !important;
+    color: rgba(23, 51, 40, 0.6) !important;
+  }
+
+  .rc-team-meta strong {
+    font-size: 1.55rem !important;
+    line-height: 1 !important;
+    color: #173328 !important;
+  }
+
+  .rc-team-meta small {
+    font-size: 0.78rem !important;
+    color: #173328 !important;
+  }
+
+  .team-logo {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .rc-score-bar {
+    margin-top: 10px !important;
+  }
+
+  .rc-score-bar-score {
+    font-size: 1.6rem !important;
+    color: #ffffff !important;
+  }
+}
