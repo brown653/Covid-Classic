@@ -3488,3 +3488,222 @@ select {
     font-size: 1.6rem !important;
   }
 }
+/* ===== TOP HEADER FIX ===== */
+
+.rc-topline-fixed {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.rc-score-header-fixed {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border: 1px solid rgba(15, 42, 34, 0.08) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08) !important;
+  padding: 14px 16px !important;
+}
+
+.scoreboard-race {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.scoreboard-race strong {
+  display: block;
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #123326;
+}
+
+.scoreboard-race span {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: rgba(18, 51, 38, 0.58);
+}
+
+.scoreboard-teams {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  align-items: end;
+}
+
+.scoreboard-team {
+  min-width: 0;
+}
+
+.scoreboard-team-left {
+  text-align: left;
+}
+
+.scoreboard-team-right {
+  text-align: right;
+}
+
+.scoreboard-team-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.scoreboard-team-brand-right {
+  justify-content: flex-end;
+}
+
+.scoreboard-team-copy {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.06;
+}
+
+.scoreboard-team-copy span {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #123326;
+}
+
+.scoreboard-team-copy small {
+  font-size: 0.68rem;
+  color: rgba(18, 51, 38, 0.6);
+}
+
+.scoreboard-team-copy-right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.scoreboard-team-win {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.scoreboard-team-win strong {
+  font-size: 1.9rem;
+  line-height: 1;
+  color: #123326;
+}
+
+.scoreboard-team-win span {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #123326;
+}
+
+.scoreboard-team-win-right {
+  justify-content: flex-end;
+}
+
+.rc-score-bar {
+  margin-top: 12px !important;
+}
+
+.rc-score-bar-score {
+  color: #ffffff !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 768px) {
+  .rc-page,
+  body {
+    background: #f3f0e6 !important;
+    background-image: none !important;
+  }
+
+  .rc-topline-fixed {
+    margin-bottom: 8px;
+  }
+
+  .rc-brand {
+    max-width: 155px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.02 !important;
+    letter-spacing: 0.14em !important;
+  }
+
+  .rc-live-pill {
+    flex-shrink: 0;
+    padding: 6px 10px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .rc-score-header-fixed {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .scoreboard-race {
+    margin-bottom: 10px;
+  }
+
+  .scoreboard-race strong {
+    font-size: 0.98rem;
+  }
+
+  .scoreboard-race span {
+    font-size: 0.72rem;
+  }
+
+  .scoreboard-teams {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .scoreboard-team-left,
+  .scoreboard-team-right {
+    text-align: left;
+  }
+
+  .scoreboard-team-brand,
+  .scoreboard-team-brand-right {
+    justify-content: flex-start;
+  }
+
+  .scoreboard-team-copy,
+  .scoreboard-team-copy-right {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .scoreboard-team-copy span {
+    font-size: 0.8rem;
+    line-height: 1.05;
+  }
+
+  .scoreboard-team-copy small {
+    font-size: 0.6rem;
+    line-height: 1.02;
+  }
+
+  .scoreboard-team-win,
+  .scoreboard-team-win-right {
+    justify-content: flex-start;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 3px;
+  }
+
+  .scoreboard-team-win strong {
+    font-size: 1.55rem;
+  }
+
+  .scoreboard-team-win span {
+    font-size: 0.78rem;
+  }
+
+  .rc-score-bar {
+    margin-top: 10px !important;
+  }
+
+  .rc-score-bar-score {
+    font-size: 1.6rem !important;
+  }
+}
