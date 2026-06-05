@@ -304,10 +304,8 @@ function App() {
 
   function getCourse(roundId) {
     const round = getRound(roundId);
-
     if (round.courseKey === "jackFrost") return JACK_FROST;
     if (round.courseKey === "splitRockNorth") return SPLIT_ROCK_NORTH;
-
     return JACK_FROST;
   }
 
@@ -501,14 +499,12 @@ function App() {
 
   function getScoringPlayerForRound(roundId, player) {
     if (roundId !== 2) return player;
-
     const pair = teams[2].find((team) => team.includes(player));
     return pair ? pair[0] : player;
   }
 
   function getScoreEntryLabel(roundId, player) {
     if (roundId !== 2) return player;
-
     const pair = teams[2].find((team) => team.includes(player));
     return pair ? `${pair[0]} / ${pair[1]} Scramble Score` : player;
   }
@@ -594,31 +590,66 @@ function App() {
     return { teamAScore, teamBScore, holesCounted, higherIsBetter: true };
   }
 
+  function getSinglesClosedMatchResult(match) {
+    const playerA = match[0];
+    const playerB = match[1];
+
+    let aWins = 0;
+    let bWins = 0;
+    let holesPlayed = 0;
+    let closed = false;
+    let closedDiff = 0;
+    let closedRemaining = 0;
+
+    for (let hole = 1; hole <= 18; hole++) {
+      const netA = Number(getNetScore(3, playerA, hole, { opponent: playerB }));
+      const netB = Number(getNetScore(3, playerB, hole, { opponent: playerA }));
+
+      if (!netA || !netB) continue;
+
+      holesPlayed += 1;
+
+      if (netA < netB) aWins += 1;
+      if (netB < netA) bWins += 1;
+
+      const diff = Math.abs(aWins - bWins);
+      const holesRemaining = 18 - holesPlayed;
+
+      if (diff > holesRemaining) {
+        closed = true;
+        closedDiff = diff;
+        closedRemaining = holesRemaining;
+        break;
+      }
+    }
+
+    return {
+      teamAScore: aWins,
+      teamBScore: bWins,
+      holesCounted: holesPlayed,
+      closed,
+      closedDiff,
+      closedRemaining,
+    };
+  }
+
   function getSinglesMatchplayLabel(matchup) {
-    const full = getSinglesMatchSegment(
-      [matchup.sideAPlayers[0], matchup.sideBPlayers[0]],
-      1,
-      18
-    );
+    const result = getSinglesClosedMatchResult([
+      matchup.sideAPlayers[0],
+      matchup.sideBPlayers[0],
+    ]);
 
-    const holesPlayed = full.holesCounted;
-    if (!holesPlayed) return "Not Started";
+    if (!result.holesCounted) return "Not Started";
 
-    const diff = Math.abs(full.teamAScore - full.teamBScore);
-    const holesRemaining = 18 - holesPlayed;
+    if (result.closed) {
+      const leader = result.teamAScore > result.teamBScore ? "CDL" : "WGD";
+      return `${leader} ${result.closedDiff}&${result.closedRemaining}`;
+    }
 
+    const diff = Math.abs(result.teamAScore - result.teamBScore);
     if (diff === 0) return "A/S";
 
-    const leader = full.teamAScore > full.teamBScore ? "T1" : "T2";
-
-    if (holesRemaining === 0) {
-      return `${leader} ${diff} UP`;
-    }
-
-    if (diff > holesRemaining) {
-      return `${leader} ${diff}&${holesRemaining}`;
-    }
-
+    const leader = result.teamAScore > result.teamBScore ? "CDL" : "WGD";
     return `${leader} ${diff} UP`;
   }
 
@@ -636,21 +667,20 @@ function App() {
     return segment.teamAScore < segment.teamBScore ? [pointValue, 0] : [0, pointValue];
   }
 
-  function awardClosedMatchPoint(segment, pointValue = 2) {
-    if (!segment.holesCounted) return [0, 0];
+  function awardClosedMatchPoint(match, pointValue = 2) {
+    const result = getSinglesClosedMatchResult(match);
 
-    const diff = Math.abs(segment.teamAScore - segment.teamBScore);
-    const holesRemaining = 18 - segment.holesCounted;
+    if (!result.holesCounted) return [0, 0];
 
-    if (segment.holesCounted < 18 && diff <= holesRemaining) {
+    if (!result.closed && result.holesCounted < 18) {
       return [0, 0];
     }
 
-    if (segment.teamAScore === segment.teamBScore) {
+    if (result.teamAScore === result.teamBScore) {
       return [pointValue / 2, pointValue / 2];
     }
 
-    return segment.teamAScore > segment.teamBScore
+    return result.teamAScore > result.teamBScore
       ? [pointValue, 0]
       : [0, pointValue];
   }
@@ -700,11 +730,10 @@ function App() {
       teams[3].forEach((match) => {
         const front = getSinglesMatchSegment(match, 1, 9);
         const back = getSinglesMatchSegment(match, 10, 18);
-        const full = getSinglesMatchSegment(match, 1, 18);
 
         const frontPoints = awardCompletedPoint(front, 1, 9);
         const backPoints = awardCompletedPoint(back, 1, 9);
-        const fullPoints = awardClosedMatchPoint(full, 2);
+        const fullPoints = awardClosedMatchPoint(match, 2);
 
         team1 += frontPoints[0] + backPoints[0] + fullPoints[0];
         team2 += frontPoints[1] + backPoints[1] + fullPoints[1];
@@ -714,7 +743,7 @@ function App() {
     return { team1, team2 };
   }
 
-  function getSegmentStatus(segment, labelA = "T1", labelB = "T2") {
+  function getSegmentStatus(segment, labelA = "CDL", labelB = "WGD") {
     if (!segment.holesCounted) return "Not Started";
     if (segment.teamAScore === segment.teamBScore) return "Tied";
 
@@ -734,10 +763,10 @@ function App() {
     if (segment.teamAScore === segment.teamBScore) return "Halved";
 
     if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore ? "T1" : "T2";
+      return segment.teamAScore > segment.teamBScore ? "CDL" : "WGD";
     }
 
-    return segment.teamAScore < segment.teamBScore ? "T1" : "T2";
+    return segment.teamAScore < segment.teamBScore ? "CDL" : "WGD";
   }
 
   const weekendScore = useMemo(() => {
@@ -865,7 +894,7 @@ function App() {
       front,
       back,
       full,
-      status: getSegmentStatus(full, "T1", "T2"),
+      status: getSegmentStatus(full, "CDL", "WGD"),
     };
   }
 
@@ -876,10 +905,10 @@ function App() {
     if (segment.teamAScore === segment.teamBScore) return "E";
 
     if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore ? "T1" : "T2";
+      return segment.teamAScore > segment.teamBScore ? "CDL" : "WGD";
     }
 
-    return segment.teamAScore < segment.teamBScore ? "T1" : "T2";
+    return segment.teamAScore < segment.teamBScore ? "CDL" : "WGD";
   }
 
   function updatePlayer(index, newName) {
@@ -907,6 +936,17 @@ function App() {
 
       return updatedTeams;
     });
+  }
+
+  function updateDriveCount(pairIndex, side, value) {
+    const clean = Math.max(0, Number(value || 0));
+    setScrambleDriveCounts((prev) => ({
+      ...prev,
+      [pairIndex]: {
+        ...prev[pairIndex],
+        [side]: clean,
+      },
+    }));
   }
 
   function renderScorecardRow(roundId, player, context = null) {
@@ -1076,7 +1116,7 @@ function App() {
     if (full.teamAScore === full.teamBScore) return "A/S";
 
     const leader = getMatchLeader(matchup);
-    const leaderLabel = leader === "team1" ? "T1" : "T2";
+    const leaderLabel = leader === "team1" ? "CDL" : "WGD";
     return `${leaderLabel} ${Math.abs(full.teamAScore - full.teamBScore)} UP`;
   }
 
@@ -1221,19 +1261,26 @@ function App() {
     return (
       <button className={`rc-match-card leader-${leader}`} onClick={() => setSelectedMatchupId(matchup.id)}>
         <div className={`rc-match-side rc-side-red ${leader === "team1" ? "leading" : ""}`}>
-          <TeamBadge teamKey="team1" fallback="T1" size={42} />
+          <TeamBadge teamKey="team1" fallback="CDL" size={42} />
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideAPlayers} side="team1" />
           </div>
         </div>
 
         <div className={`rc-match-center ${leader === "team1" ? "red-leader" : leader === "team2" ? "blue-leader" : "tie-leader"}`}>
-          <p>Match {matchNumber} <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span></p>
+          <p>
+            Match {matchNumber}{" "}
+            <span>{holesPlayed >= 18 ? "Final" : holesPlayed ? `Thru ${holesPlayed}` : "Upcoming"}</span>
+          </p>
           <strong>{resultLabel}</strong>
           <div className="rc-points-row">
             <span>Front 9: {getSegmentWinnerLabel(summary.front)}</span>
             <span>Back 9: {getSegmentWinnerLabel(summary.back)}</span>
-            <span>18 Holes: {getSegmentWinnerLabel(summary.full)}</span>
+            <span>
+              {matchup.type === "singles"
+                ? `Match: ${getSinglesMatchplayLabel(matchup)}`
+                : `18 Holes: ${getSegmentWinnerLabel(summary.full)}`}
+            </span>
           </div>
         </div>
 
@@ -1241,7 +1288,7 @@ function App() {
           <div className="rc-side-content">
             <PlayerAvatarRow players={matchup.sideBPlayers} side="team2" />
           </div>
-          <TeamBadge teamKey="team2" fallback="T2" size={42} />
+          <TeamBadge teamKey="team2" fallback="WGD" size={42} />
         </div>
 
         <div className="rc-hole-strip">
@@ -1251,7 +1298,9 @@ function App() {
             return (
               <span
                 key={hole}
-                className={`rc-hole-dot ${result === "T1" ? "red" : result === "T2" ? "blue" : result === "E" ? "even" : ""}`}
+                className={`rc-hole-dot ${
+                  result === "CDL" ? "red" : result === "WGD" ? "blue" : result === "E" ? "even" : ""
+                }`}
               >
                 {hole}
               </span>
@@ -1332,9 +1381,7 @@ function App() {
               />
               <div>
                 <p>{TEAM_BRANDING.team1.name}</p>
-                {TEAM_BRANDING.team1.subtitle && (
-                  <small>{TEAM_BRANDING.team1.subtitle}</small>
-                )}
+                {TEAM_BRANDING.team1.subtitle && <small>{TEAM_BRANDING.team1.subtitle}</small>}
                 <strong>{formatPoints(weekendScore.team1)}</strong>
               </div>
             </div>
@@ -1355,9 +1402,7 @@ function App() {
               />
               <div>
                 <p>{TEAM_BRANDING.team2.name}</p>
-                {TEAM_BRANDING.team2.subtitle && (
-                  <small>{TEAM_BRANDING.team2.subtitle}</small>
-                )}
+                {TEAM_BRANDING.team2.subtitle && <small>{TEAM_BRANDING.team2.subtitle}</small>}
                 <strong>{formatPoints(weekendScore.team2)}</strong>
               </div>
             </div>
@@ -1398,7 +1443,9 @@ function App() {
           <label>Player</label>
           <select value={selectedPlayer} onChange={(event) => setSelectedPlayer(event.target.value)}>
             {players.map((player) => (
-              <option key={player} value={player}>{player}</option>
+              <option key={player} value={player}>
+                {player}
+              </option>
             ))}
           </select>
 
@@ -1438,14 +1485,8 @@ function App() {
           <div className="hole-list">
             {course.par.map((par, index) => {
               const hole = index + 1;
-              const pops =
-                selectedRoundId === 1
-                  ? getStablefordHoleStrokes(scoringPlayer, hole)
-                  : 0;
-              const netScore =
-                selectedRoundId === 1
-                  ? getNetScore(selectedRoundId, scoringPlayer, hole)
-                  : "";
+              const pops = selectedRoundId === 1 ? getStablefordHoleStrokes(scoringPlayer, hole) : 0;
+              const netScore = selectedRoundId === 1 ? getNetScore(selectedRoundId, scoringPlayer, hole) : "";
 
               return (
                 <div className="hole-row" key={hole}>
@@ -1510,7 +1551,9 @@ function App() {
                         <span>{summary.status}</span>
                       </div>
 
-                      <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
+                      <strong>
+                        {summary.full.teamAScore} - {summary.full.teamBScore}
+                      </strong>
                     </button>
                   );
                 })}
@@ -1777,7 +1820,7 @@ function App() {
                         border: complete ? "2px solid #0c6a36" : "2px solid rgba(163,22,45,.25)",
                         borderRadius: "12px",
                         padding: "12px",
-                        background: complete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)"
+                        background: complete ? "rgba(12,106,54,.08)" : "rgba(163,22,45,.05)",
                       }}
                     >
                       <label>{player} drives used</label>
@@ -1792,7 +1835,7 @@ function App() {
                         style={{
                           margin: "8px 0 0",
                           fontWeight: 800,
-                          color: complete ? "#0c6a36" : "#a3162d"
+                          color: complete ? "#0c6a36" : "#a3162d",
                         }}
                       >
                         {complete ? "Met minimum ✓" : `Needs ${Math.max(0, 6 - Number(value))} more`}
@@ -1814,7 +1857,8 @@ function App() {
               </div>
             </div>
             <p>
-              Strokes applied: <strong>{singlesInfo.strokes}</strong> to <strong>{singlesInfo.receiver ?? "Neither Player"}</strong>
+              Strokes applied: <strong>{singlesInfo.strokes}</strong> to{" "}
+              <strong>{singlesInfo.receiver ?? "Neither Player"}</strong>
             </p>
           </section>
         )}
