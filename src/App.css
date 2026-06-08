@@ -4210,3 +4210,51 @@ select {
 .rc-match-side.rc-side-red.leading .rc-avatar-card small {
   color: #ffffff !important;
 }
+/* ===== NAV + ROUND TABS MATCH TOP TEAM CARD STYLE ===== */
+
+.rc-nav,
+.rc-session-tabs {
+  background: transparent !important;
+  gap: 8px !important;
+  border: none !important;
+}
+
+.rc-nav button,
+.rc-session-tabs button {
+  background: rgba(243, 240, 230, 0.92) !important;
+  color: #173328 !important;
+  border: 1px solid rgba(23, 51, 40, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: none !important;
+  font-weight: 800 !important;
+}
+
+.rc-nav button.active,
+.rc-session-tabs button.active {
+  background: rgba(243, 240, 230, 0.92) !important;
+  color: #173328 !important;
+  border: 2px solid #0f5a38 !important;
+  box-shadow: none !important;
+}
+
+.rc-nav button:hover,
+.rc-session-tabs button:hover {
+  background: rgba(243, 240, 230, 0.98) !important;
+}
+
+.rc-session-tabs button span,
+.rc-session-tabs button strong {
+  color: #173328 !important;
+}
+
+@media (max-width: 768px) {
+  .rc-nav,
+  .rc-session-tabs {
+    gap: 6px !important;
+  }
+
+  .rc-nav button,
+  .rc-session-tabs button {
+    border-radius: 10px !important;
+  }
+}
