@@ -82,6 +82,46 @@ const SPLIT_ROCK_NORTH = {
   hcp: [13, 17, 7, 1, 3, 15, 11, 5, 9, 2, 10, 16, 4, 6, 8, 18, 12, 14],
 };
 
+const PRACTICE_PLAYERS = [
+  { key: "Mike Paladino", label: "Mike Paladino" },
+  { key: "Al Brown", label: "Alex Brown" },
+  { key: "Jason Spendley", label: "Jason Spendley" },
+  { key: "Charles Mayer", label: "Charles Mayer" },
+];
+
+const PRACTICE_ROUNDS = [
+  {
+    id: 99,
+    name: "Practice Front 9",
+    shortName: "Front 9",
+    courseName: "Blue Ridge Trail",
+    tee: "Blue",
+    par: [4, 4, 5, 3, 4, 5, 3, 4, 4],
+    hcp: [8, 1, 5, 9, 7, 4, 6, 3, 2],
+    yards: [329, 404, 460, 171, 420, 575, 190, 375, 400],
+  },
+  {
+    id: 100,
+    name: "Practice Middle 9",
+    shortName: "Middle 9",
+    courseName: "Blue Ridge Trail",
+    tee: "Blue",
+    par: [4, 4, 4, 3, 5, 4, 5, 4, 3],
+    hcp: [9, 7, 5, 6, 1, 2, 3, 4, 8],
+    yards: [348, 302, 420, 180, 560, 425, 505, 389, 149],
+  },
+  {
+    id: 101,
+    name: "Practice Back 9",
+    shortName: "Back 9",
+    courseName: "Blue Ridge Trail",
+    tee: "Blue",
+    par: [4, 5, 4, 3, 4, 4, 3, 5, 4],
+    hcp: [9, 2, 4, 8, 3, 1, 6, 5, 7],
+    yards: [323, 496, 363, 156, 395, 453, 189, 465, 342],
+  },
+];
+
 const rounds = [
   {
     id: 1,
@@ -181,7 +221,7 @@ function TeamBadge({ teamKey, fallback, size = 54 }) {
 }
 
 function App() {
-  const [players, setPlayers] = useState(defaultPlayers);
+  const [players] = useState(defaultPlayers);
   const [activeTab, setActiveTab] = useState("home");
   const [selectedPlayer, setSelectedPlayer] = useState(defaultPlayers[0]);
   const [selectedRoundId, setSelectedRoundId] = useState(1);
@@ -189,6 +229,9 @@ function App() {
   const [scores, setScores] = useState({});
   const [handicaps, setHandicaps] = useState({});
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
+
+  const [selectedPracticeRoundId, setSelectedPracticeRoundId] = useState(99);
+  const [selectedPracticePlayer, setSelectedPracticePlayer] = useState("Mike Paladino");
 
   const [scrambleDriveCounts, setScrambleDriveCounts] = useState({
     "0": { a: 0, b: 0 },
@@ -309,6 +352,14 @@ function App() {
     return JACK_FROST;
   }
 
+  function getPracticeRound(roundId) {
+    return PRACTICE_ROUNDS.find((round) => round.id === roundId);
+  }
+
+  function getPracticePlayerLabel(playerKey) {
+    return PRACTICE_PLAYERS.find((player) => player.key === playerKey)?.label || playerKey;
+  }
+
   function getScore(roundId, player, holeNumber) {
     return scores?.[roundId]?.[player]?.[holeNumber] || "";
   }
@@ -404,6 +455,35 @@ function App() {
     const extraStrokes = totalStrokes % 18;
 
     return baseStrokes + (holeHcp <= extraStrokes ? 1 : 0);
+  }
+
+  function getPracticeHoleStrokes(player, roundId, holeNumber) {
+    const practiceRound = getPracticeRound(roundId);
+    if (!practiceRound) return 0;
+
+    const totalStrokes = roundHalfUp(Number(handicaps[player] || 0) / 2);
+    if (!totalStrokes) return 0;
+
+    const holeHcp = practiceRound.hcp[holeNumber - 1];
+    const baseStrokes = Math.floor(totalStrokes / 9);
+    const extraStrokes = totalStrokes % 9;
+
+    return baseStrokes + (holeHcp <= extraStrokes ? 1 : 0);
+  }
+
+  function getPracticeNetScore(roundId, player, holeNumber) {
+    const gross = Number(getScore(roundId, player, holeNumber));
+    if (!gross) return "";
+    return gross - getPracticeHoleStrokes(player, roundId, holeNumber);
+  }
+
+  function getPracticeTotal(roundId, player, net = false) {
+    let total = 0;
+    for (let hole = 1; hole <= 9; hole++) {
+      const score = net ? getPracticeNetScore(roundId, player, hole) : getScore(roundId, player, hole);
+      total += Number(score || 0);
+    }
+    return total;
   }
 
   function getSinglesMatchStrokeInfo(playerA, playerB) {
@@ -861,21 +941,11 @@ function App() {
 
   function getMatchupSegment(matchup, start, end) {
     if (matchup.type === "stableford") {
-      return getStablefordSegment(
-        matchup.sideAPlayers,
-        matchup.sideBPlayers,
-        start,
-        end
-      );
+      return getStablefordSegment(matchup.sideAPlayers, matchup.sideBPlayers, start, end);
     }
 
     if (matchup.type === "scramble") {
-      return getScramblePairSegment(
-        matchup.sideAPlayers,
-        matchup.sideBPlayers,
-        start,
-        end
-      );
+      return getScramblePairSegment(matchup.sideAPlayers, matchup.sideBPlayers, start, end);
     }
 
     return getSinglesMatchSegment(
@@ -911,24 +981,12 @@ function App() {
     return segment.teamAScore < segment.teamBScore ? "CDL" : "WGD";
   }
 
-  function updatePlayer(index, newName) {
-    const oldName = players[index];
-    const updatedPlayers = [...players];
-    updatedPlayers[index] = newName;
-    setPlayers(updatedPlayers);
-
-    if (selectedPlayer === oldName) {
-      setSelectedPlayer(newName);
-    }
-  }
-
   function updateTeam(roundId, teamIndex, playerIndex, value) {
     setTeams((previousTeams) => {
       const updatedTeams = { ...previousTeams };
 
       updatedTeams[roundId] = updatedTeams[roundId].map((team, index) => {
         if (index !== teamIndex) return team;
-
         const updatedTeam = [...team];
         updatedTeam[playerIndex] = value;
         return updatedTeam;
@@ -972,9 +1030,7 @@ function App() {
               type="number"
               min="1"
               value={getScore(roundId, player, hole)}
-              onChange={(event) =>
-                updateScore(roundId, player, hole, event.target.value)
-              }
+              onChange={(event) => updateScore(roundId, player, hole, event.target.value)}
             />
             {showNet && context?.opponent && getSinglesHoleStrokes(player, context.opponent, player, hole) > 0 && (
               <span className="pop-star" aria-label="Handicap stroke">*</span>
@@ -996,9 +1052,7 @@ function App() {
               type="number"
               min="1"
               value={getScore(roundId, player, hole)}
-              onChange={(event) =>
-                updateScore(roundId, player, hole, event.target.value)
-              }
+              onChange={(event) => updateScore(roundId, player, hole, event.target.value)}
             />
             {showNet && context?.opponent && getSinglesHoleStrokes(player, context.opponent, player, hole) > 0 && (
               <span className="pop-star" aria-label="Handicap stroke">*</span>
@@ -1034,9 +1088,7 @@ function App() {
               let netTotal = 0;
               for (let hole = 1; hole <= 18; hole++) {
                 const gross = Number(getScore(2, scoringPlayer, hole) || 0);
-                const net = gross
-                  ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole)
-                  : 0;
+                const net = gross ? gross - getScrambleHoleStrokes(pair, opponentPair, sideKey, hole) : 0;
                 netTotal += net;
               }
               return netTotal || "-";
@@ -1058,15 +1110,9 @@ function App() {
                 type="number"
                 min="1"
                 value={getScore(2, scoringPlayer, hole)}
-                onChange={(event) =>
-                  updateScore(2, scoringPlayer, hole, event.target.value)
-                }
+                onChange={(event) => updateScore(2, scoringPlayer, hole, event.target.value)}
               />
-              {stroke > 0 && (
-                <span className="pop-star" aria-label="Handicap stroke">
-                  *
-                </span>
-              )}
+              {stroke > 0 && <span className="pop-star" aria-label="Handicap stroke">*</span>}
             </td>
           );
         })}
@@ -1087,15 +1133,9 @@ function App() {
                 type="number"
                 min="1"
                 value={getScore(2, scoringPlayer, hole)}
-                onChange={(event) =>
-                  updateScore(2, scoringPlayer, hole, event.target.value)
-                }
+                onChange={(event) => updateScore(2, scoringPlayer, hole, event.target.value)}
               />
-              {stroke > 0 && (
-                <span className="pop-star" aria-label="Handicap stroke">
-                  *
-                </span>
-              )}
+              {stroke > 0 && <span className="pop-star" aria-label="Handicap stroke">*</span>}
             </td>
           );
         })}
@@ -1169,10 +1209,7 @@ function App() {
   function AppShell({ children }) {
     const team1Needed = Math.max(0, RACE_TO - weekendScore.team1);
     const team2Needed = Math.max(0, RACE_TO - weekendScore.team2);
-    const leadPercent = Math.max(
-      0,
-      Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100)
-    );
+    const leadPercent = Math.max(0, Math.min(100, (weekendScore.team1 / TOTAL_WEEKEND_POINTS) * 100));
 
     return (
       <div className="rc-page">
@@ -1194,11 +1231,7 @@ function App() {
           <div className="scoreboard-teams">
             <div className="scoreboard-team scoreboard-team-left">
               <div className="scoreboard-team-brand">
-                <TeamLogo
-                  src={TEAM_BRANDING.team1.logo}
-                  alt={TEAM_BRANDING.team1.name}
-                  size={30}
-                />
+                <TeamLogo src={TEAM_BRANDING.team1.logo} alt={TEAM_BRANDING.team1.name} size={30} />
                 <div className="scoreboard-team-copy">
                   <span>{TEAM_BRANDING.team1.name}</span>
                   <small>{TEAM_BRANDING.team1.subtitle}</small>
@@ -1217,11 +1250,7 @@ function App() {
                   <span>{TEAM_BRANDING.team2.name}</span>
                   <small>{TEAM_BRANDING.team2.subtitle}</small>
                 </div>
-                <TeamLogo
-                  src={TEAM_BRANDING.team2.logo}
-                  alt={TEAM_BRANDING.team2.name}
-                  size={30}
-                />
+                <TeamLogo src={TEAM_BRANDING.team2.logo} alt={TEAM_BRANDING.team2.name} size={30} />
               </div>
 
               <div className="scoreboard-team-win scoreboard-team-win-right">
@@ -1243,6 +1272,7 @@ function App() {
             <button className={activeTab === "home" ? "active" : ""} onClick={() => setActiveTab("home")}>Scoring</button>
             <button className={activeTab === "enter" ? "active" : ""} onClick={() => setActiveTab("enter")}>Enter Scores</button>
             <button className={activeTab === "matchups" ? "active" : ""} onClick={() => setActiveTab("matchups")}>All Matches</button>
+            <button className={activeTab === "practice" ? "active" : ""} onClick={() => setActiveTab("practice")}>Practice</button>
             <button className={activeTab === "setup" ? "active" : ""} onClick={() => setActiveTab("setup")}>Setup</button>
           </nav>
         )}
@@ -1374,11 +1404,7 @@ function App() {
         <section className="rc-team-footer">
           <div className="rc-roster-card red branded-roster-card">
             <div className="roster-brand-head">
-              <TeamLogo
-                src={TEAM_BRANDING.team1.logo}
-                alt={TEAM_BRANDING.team1.name}
-                size={52}
-              />
+              <TeamLogo src={TEAM_BRANDING.team1.logo} alt={TEAM_BRANDING.team1.name} size={52} />
               <div>
                 <p>{TEAM_BRANDING.team1.name}</p>
                 {TEAM_BRANDING.team1.subtitle && <small>{TEAM_BRANDING.team1.subtitle}</small>}
@@ -1395,11 +1421,7 @@ function App() {
 
           <div className="rc-roster-card blue branded-roster-card">
             <div className="roster-brand-head">
-              <TeamLogo
-                src={TEAM_BRANDING.team2.logo}
-                alt={TEAM_BRANDING.team2.name}
-                size={52}
-              />
+              <TeamLogo src={TEAM_BRANDING.team2.logo} alt={TEAM_BRANDING.team2.name} size={52} />
               <div>
                 <p>{TEAM_BRANDING.team2.name}</p>
                 {TEAM_BRANDING.team2.subtitle && <small>{TEAM_BRANDING.team2.subtitle}</small>}
@@ -1426,12 +1448,8 @@ function App() {
 
     const frontTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9);
     const backTotal = getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18);
-    const netFront = selectedRoundId === 1
-      ? getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9, true)
-      : frontTotal;
-    const netBack = selectedRoundId === 1
-      ? getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18, true)
-      : backTotal;
+    const netFront = selectedRoundId === 1 ? getPlayerTotal(selectedRoundId, scoringPlayer, 1, 9, true) : frontTotal;
+    const netBack = selectedRoundId === 1 ? getPlayerTotal(selectedRoundId, scoringPlayer, 10, 18, true) : backTotal;
     const showNet = selectedRoundId === 1;
 
     return (
@@ -1503,9 +1521,7 @@ function App() {
                     type="number"
                     min="1"
                     value={getScore(selectedRoundId, scoringPlayer, hole)}
-                    onChange={(event) =>
-                      updateScore(selectedRoundId, scoringPlayer, hole, event.target.value)
-                    }
+                    onChange={(event) => updateScore(selectedRoundId, scoringPlayer, hole, event.target.value)}
                     placeholder="-"
                   />
                 </div>
@@ -1514,6 +1530,119 @@ function App() {
           </div>
         </section>
       </section>
+    );
+  }
+
+  function PracticeView() {
+    const practiceRound = getPracticeRound(selectedPracticeRoundId);
+    const grossTotal = getPracticeTotal(selectedPracticeRoundId, selectedPracticePlayer, false);
+    const netTotal = getPracticeTotal(selectedPracticeRoundId, selectedPracticePlayer, true);
+    const practiceDisplayName = getPracticePlayerLabel(selectedPracticePlayer);
+
+    return (
+      <>
+        <section className="main-card">
+          <div className="section-title">
+            <div>
+              <p>Test Run</p>
+              <h2>{practiceRound.courseName} Practice</h2>
+            </div>
+          </div>
+          <p className="setup-note">
+            Separate from the tournament. This practice round does not affect race-to points, matchups, or standings.
+          </p>
+        </section>
+
+        <section className="rc-session-tabs">
+          {PRACTICE_ROUNDS.map((round) => (
+            <button
+              key={round.id}
+              className={selectedPracticeRoundId === round.id ? "active" : ""}
+              onClick={() => setSelectedPracticeRoundId(round.id)}
+            >
+              <span>{round.shortName}</span>
+              <strong>{round.courseName} • {round.tee} Tees</strong>
+            </button>
+          ))}
+        </section>
+
+        <section className="entry-layout">
+          <aside className="entry-picker">
+            <p>Practice</p>
+            <h2>Blue Ridge Trail</h2>
+
+            <label>Player</label>
+            <select value={selectedPracticePlayer} onChange={(event) => setSelectedPracticePlayer(event.target.value)}>
+              {PRACTICE_PLAYERS.map((player) => (
+                <option key={player.key} value={player.key}>
+                  {player.label}
+                </option>
+              ))}
+            </select>
+
+            <label>9 Hole Loop</label>
+            <select value={selectedPracticeRoundId} onChange={(event) => setSelectedPracticeRoundId(Number(event.target.value))}>
+              {PRACTICE_ROUNDS.map((round) => (
+                <option key={round.id} value={round.id}>
+                  {round.name}
+                </option>
+              ))}
+            </select>
+
+            <div className="entry-total-box">
+              <span>{practiceDisplayName}</span>
+              <strong>{grossTotal || "-"}</strong>
+              <small>
+                GROSS {grossTotal || "-"} · NET {netTotal || "-"}
+                <br />
+                {practiceRound.tee} Tees · 9 Holes
+              </small>
+            </div>
+          </aside>
+
+          <section className="phone-scorecard">
+            <div className="phone-card-head">
+              <div>
+                <p>{practiceRound.name}</p>
+                <h2>{practiceDisplayName}</h2>
+                <span>{practiceRound.courseName} • {practiceRound.tee} Tees</span>
+              </div>
+            </div>
+
+            <div className="hole-list">
+              {practiceRound.par.map((par, index) => {
+                const hole = index + 1;
+                const pops = getPracticeHoleStrokes(selectedPracticePlayer, selectedPracticeRoundId, hole);
+                const netScore = getPracticeNetScore(selectedPracticeRoundId, selectedPracticePlayer, hole);
+                const yards = practiceRound.yards[hole - 1];
+
+                return (
+                  <div className="hole-row" key={hole}>
+                    <div>
+                      <strong>Hole {hole}</strong>
+                      <span>
+                        Par {par} · HCP {practiceRound.hcp[hole - 1]} · {yards} yds
+                        {pops > 0 ? ` · ${pops} stroke${pops > 1 ? "s" : ""}` : ""}
+                        {netScore ? ` · Net ${netScore}` : ""}
+                      </span>
+                    </div>
+
+                    <input
+                      type="number"
+                      min="1"
+                      value={getScore(selectedPracticeRoundId, selectedPracticePlayer, hole)}
+                      onChange={(event) =>
+                        updateScore(selectedPracticeRoundId, selectedPracticePlayer, hole, event.target.value)
+                      }
+                      placeholder="-"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </section>
+      </>
     );
   }
 
@@ -1592,7 +1721,7 @@ function App() {
           </div>
 
           <p className="setup-note">
-            Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference.
+            Stableford uses full individual handicap. Singles use handicap difference only. Scramble uses 25% of combined pair handicap and applies only the difference. Practice uses half handicap across each 9.
           </p>
         </section>
 
@@ -1948,6 +2077,7 @@ function App() {
           {activeTab === "home" && <HomeView />}
           {activeTab === "enter" && <EnterScoresView />}
           {activeTab === "matchups" && <MatchupsView />}
+          {activeTab === "practice" && <PracticeView />}
           {activeTab === "setup" && <SetupView />}
         </>
       )}
