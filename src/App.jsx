@@ -155,7 +155,6 @@ const BACK_HOLES = [10, 11, 12, 13, 14, 15, 16, 17, 18];
 function getStablefordPoints(score, par) {
   if (!score && score !== 0) return 0;
   const diff = Number(score) - par;
-
   if (diff <= -3) return 5;
   if (diff === -2) return 4;
   if (diff === -1) return 3;
@@ -231,7 +230,7 @@ function App() {
   const [connectionStatus, setConnectionStatus] = useState("Connecting...");
 
   const [selectedPracticeRoundId, setSelectedPracticeRoundId] = useState(99);
-  const [selectedPracticePlayer, setSelectedPracticePlayer] = useState("Mike Paladino");
+  const [selectedPracticeCardPlayer, setSelectedPracticeCardPlayer] = useState(null);
 
   const [scrambleDriveCounts, setScrambleDriveCounts] = useState({
     "0": { a: 0, b: 0 },
@@ -450,7 +449,6 @@ function App() {
 
     const course = getCourse(1);
     const holeHcp = course.hcp[holeNumber - 1];
-
     const baseStrokes = Math.floor(totalStrokes / 18);
     const extraStrokes = totalStrokes % 18;
 
@@ -505,7 +503,6 @@ function App() {
 
     const course = getCourse(3);
     const holeHcp = course.hcp[holeNumber - 1];
-
     return holeHcp <= strokes ? 1 : 0;
   }
 
@@ -518,27 +515,12 @@ function App() {
     );
 
     if (teamAHcp === teamBHcp) {
-      return {
-        teamAHcp,
-        teamBHcp,
-        receiver: null,
-        strokes: 0,
-      };
+      return { teamAHcp, teamBHcp, receiver: null, strokes: 0 };
     }
 
     return teamAHcp > teamBHcp
-      ? {
-          teamAHcp,
-          teamBHcp,
-          receiver: "A",
-          strokes: teamAHcp - teamBHcp,
-        }
-      : {
-          teamAHcp,
-          teamBHcp,
-          receiver: "B",
-          strokes: teamBHcp - teamAHcp,
-        };
+      ? { teamAHcp, teamBHcp, receiver: "A", strokes: teamAHcp - teamBHcp }
+      : { teamAHcp, teamBHcp, receiver: "B", strokes: teamBHcp - teamAHcp };
   }
 
   function getScrambleHoleStrokes(pairA, pairB, side, holeNumber) {
@@ -547,7 +529,6 @@ function App() {
 
     const course = getCourse(2);
     const holeHcp = course.hcp[holeNumber - 1];
-
     return holeHcp <= strokes ? 1 : 0;
   }
 
@@ -568,12 +549,10 @@ function App() {
 
   function getPlayerTotal(roundId, player, start = 1, end = 18, net = false, context = null) {
     let total = 0;
-
     for (let hole = start; hole <= end; hole++) {
       const score = net ? getNetScore(roundId, player, hole, context) : getScore(roundId, player, hole);
       total += Number(score || 0);
     }
-
     return total;
   }
 
@@ -603,15 +582,11 @@ function App() {
 
       if (teamAHasScore && teamBHasScore) {
         const teamABest = Math.max(
-          ...teamA.map((player) =>
-            getStablefordPoints(getNetScore(1, player, hole), par)
-          )
+          ...teamA.map((player) => getStablefordPoints(getNetScore(1, player, hole), par))
         );
 
         const teamBBest = Math.max(
-          ...teamB.map((player) =>
-            getStablefordPoints(getNetScore(1, player, hole), par)
-          )
+          ...teamB.map((player) => getStablefordPoints(getNetScore(1, player, hole), par))
         );
 
         teamAScore += teamABest;
@@ -751,18 +726,13 @@ function App() {
     const result = getSinglesClosedMatchResult(match);
 
     if (!result.holesCounted) return [0, 0];
-
-    if (!result.closed && result.holesCounted < 18) {
-      return [0, 0];
-    }
+    if (!result.closed && result.holesCounted < 18) return [0, 0];
 
     if (result.teamAScore === result.teamBScore) {
       return [pointValue / 2, pointValue / 2];
     }
 
-    return result.teamAScore > result.teamBScore
-      ? [pointValue, 0]
-      : [0, pointValue];
+    return result.teamAScore > result.teamBScore ? [pointValue, 0] : [0, pointValue];
   }
 
   function getRoundCupPoints(roundId) {
@@ -828,14 +798,10 @@ function App() {
     if (segment.teamAScore === segment.teamBScore) return "Tied";
 
     if (segment.higherIsBetter) {
-      return segment.teamAScore > segment.teamBScore
-        ? `${labelA} leads`
-        : `${labelB} leads`;
+      return segment.teamAScore > segment.teamBScore ? `${labelA} leads` : `${labelB} leads`;
     }
 
-    return segment.teamAScore < segment.teamBScore
-      ? `${labelA} leads`
-      : `${labelB} leads`;
+    return segment.teamAScore < segment.teamBScore ? `${labelA} leads` : `${labelB} leads`;
   }
 
   function getSegmentWinnerLabel(segment) {
@@ -1196,6 +1162,31 @@ function App() {
     );
   }
 
+  function PracticePlayerCard({ playerKey, practiceRound, onOpen }) {
+    const displayName = getPracticePlayerLabel(playerKey);
+    const gross = getPracticeTotal(practiceRound.id, playerKey, false);
+    const net = getPracticeTotal(practiceRound.id, playerKey, true);
+
+    const holesPlayed = practiceRound.par.filter((_, index) => {
+      const hole = index + 1;
+      return getScore(practiceRound.id, playerKey, hole) !== "";
+    }).length;
+
+    return (
+      <button className="matchup-card" onClick={() => onOpen(playerKey)}>
+        <div>
+          <p>{practiceRound.shortName} • {practiceRound.tee} Tees</p>
+          <h3>{displayName}</h3>
+          <span>{holesPlayed ? `Thru ${holesPlayed}` : "Not Started"}</span>
+        </div>
+
+        <strong>
+          {gross || "-"} / {net || "-"}
+        </strong>
+      </button>
+    );
+  }
+
   function getStartedRoundId() {
     for (const roundId of [3, 2, 1]) {
       const group = matchupGroups.find((item) => item.roundId === roundId);
@@ -1521,7 +1512,9 @@ function App() {
                     type="number"
                     min="1"
                     value={getScore(selectedRoundId, scoringPlayer, hole)}
-                    onChange={(event) => updateScore(selectedRoundId, scoringPlayer, hole, event.target.value)}
+                    onChange={(event) =>
+                      updateScore(selectedRoundId, scoringPlayer, hole, event.target.value)
+                    }
                     placeholder="-"
                   />
                 </div>
@@ -1535,9 +1528,6 @@ function App() {
 
   function PracticeView() {
     const practiceRound = getPracticeRound(selectedPracticeRoundId);
-    const grossTotal = getPracticeTotal(selectedPracticeRoundId, selectedPracticePlayer, false);
-    const netTotal = getPracticeTotal(selectedPracticeRoundId, selectedPracticePlayer, true);
-    const practiceDisplayName = getPracticePlayerLabel(selectedPracticePlayer);
 
     return (
       <>
@@ -1545,7 +1535,7 @@ function App() {
           <div className="section-title">
             <div>
               <p>Test Run</p>
-              <h2>{practiceRound.courseName} Practice</h2>
+              <h2>Blue Ridge Trail Practice</h2>
             </div>
           </div>
           <p className="setup-note">
@@ -1558,7 +1548,10 @@ function App() {
             <button
               key={round.id}
               className={selectedPracticeRoundId === round.id ? "active" : ""}
-              onClick={() => setSelectedPracticeRoundId(round.id)}
+              onClick={() => {
+                setSelectedPracticeRoundId(round.id);
+                setSelectedPracticeCardPlayer(null);
+              }}
             >
               <span>{round.shortName}</span>
               <strong>{round.courseName} • {round.tee} Tees</strong>
@@ -1566,81 +1559,174 @@ function App() {
           ))}
         </section>
 
-        <section className="entry-layout">
-          <aside className="entry-picker">
-            <p>Practice</p>
-            <h2>Blue Ridge Trail</h2>
-
-            <label>Player</label>
-            <select value={selectedPracticePlayer} onChange={(event) => setSelectedPracticePlayer(event.target.value)}>
-              {PRACTICE_PLAYERS.map((player) => (
-                <option key={player.key} value={player.key}>
-                  {player.label}
-                </option>
-              ))}
-            </select>
-
-            <label>9 Hole Loop</label>
-            <select value={selectedPracticeRoundId} onChange={(event) => setSelectedPracticeRoundId(Number(event.target.value))}>
-              {PRACTICE_ROUNDS.map((round) => (
-                <option key={round.id} value={round.id}>
-                  {round.name}
-                </option>
-              ))}
-            </select>
-
-            <div className="entry-total-box">
-              <span>{practiceDisplayName}</span>
-              <strong>{grossTotal || "-"}</strong>
-              <small>
-                GROSS {grossTotal || "-"} · NET {netTotal || "-"}
-                <br />
-                {practiceRound.tee} Tees · 9 Holes
-              </small>
+        <section className="rc-session-card">
+          <div className="rc-section-head">
+            <div>
+              <p>Practice Round</p>
+              <h2>{practiceRound.name} — {practiceRound.courseName}</h2>
+              <p style={{ marginTop: "8px", letterSpacing: "normal", textTransform: "none" }}>
+                Gross / Net scoring • Blue Tees • 9 holes
+              </p>
             </div>
-          </aside>
+            <div className="rc-session-score">Practice</div>
+          </div>
 
-          <section className="phone-scorecard">
-            <div className="phone-card-head">
+          <div className="matchup-list">
+            {PRACTICE_PLAYERS.map((player) => (
+              <PracticePlayerCard
+                key={player.key}
+                playerKey={player.key}
+                practiceRound={practiceRound}
+                onOpen={(playerKey) => setSelectedPracticeCardPlayer(playerKey)}
+              />
+            ))}
+          </div>
+        </section>
+      </>
+    );
+  }
+
+  function PracticeScorecardView() {
+    const practiceRound = getPracticeRound(selectedPracticeRoundId);
+    const playerKey = selectedPracticeCardPlayer;
+    const displayName = getPracticePlayerLabel(playerKey);
+
+    const grossTotal = getPracticeTotal(selectedPracticeRoundId, playerKey, false);
+    const netTotal = getPracticeTotal(selectedPracticeRoundId, playerKey, true);
+    const totalPar = practiceRound.par.reduce((sum, par) => sum + par, 0);
+
+    return (
+      <>
+        <div className="detail-actions">
+          <button onClick={() => setSelectedPracticeCardPlayer(null)}>← Back</button>
+          <button onClick={() => resetRound(selectedPracticeRoundId)}>Reset 9</button>
+        </div>
+
+        <section className="match-detail-shell">
+          <div className="match-detail-team team1">
+            <div className="match-detail-team-head">
+              <div className="rc-avatar-circle" style={{ width: 42, height: 42 }}>
+                {PLAYER_PHOTOS[playerKey] ? (
+                  <img src={PLAYER_PHOTOS[playerKey]} alt={displayName} />
+                ) : (
+                  <span>{displayName.slice(0, 2).toUpperCase()}</span>
+                )}
+              </div>
               <div>
                 <p>{practiceRound.name}</p>
-                <h2>{practiceDisplayName}</h2>
-                <span>{practiceRound.courseName} • {practiceRound.tee} Tees</span>
+                <h2>{displayName}</h2>
               </div>
             </div>
+          </div>
 
-            <div className="hole-list">
-              {practiceRound.par.map((par, index) => {
-                const hole = index + 1;
-                const pops = getPracticeHoleStrokes(selectedPracticePlayer, selectedPracticeRoundId, hole);
-                const netScore = getPracticeNetScore(selectedPracticeRoundId, selectedPracticePlayer, hole);
-                const yards = practiceRound.yards[hole - 1];
-
-                return (
-                  <div className="hole-row" key={hole}>
-                    <div>
-                      <strong>Hole {hole}</strong>
-                      <span>
-                        Par {par} · HCP {practiceRound.hcp[hole - 1]} · {yards} yds
-                        {pops > 0 ? ` · ${pops} stroke${pops > 1 ? "s" : ""}` : ""}
-                        {netScore ? ` · Net ${netScore}` : ""}
-                      </span>
-                    </div>
-
-                    <input
-                      type="number"
-                      min="1"
-                      value={getScore(selectedPracticeRoundId, selectedPracticePlayer, hole)}
-                      onChange={(event) =>
-                        updateScore(selectedPracticeRoundId, selectedPracticePlayer, hole, event.target.value)
-                      }
-                      placeholder="-"
-                    />
-                  </div>
-                );
-              })}
+          <div className="match-detail-center">
+            <p>{practiceRound.courseName} · {practiceRound.tee} Tees</p>
+            <strong>{grossTotal || "-"} / {netTotal || "-"}</strong>
+            <div className="match-detail-score-row">
+              <div>
+                <span>Gross</span>
+                <b>{grossTotal || "-"}</b>
+              </div>
+              <div>
+                <span>Net</span>
+                <b>{netTotal || "-"}</b>
+              </div>
+              <div>
+                <span>Par</span>
+                <b>{totalPar}</b>
+              </div>
             </div>
-          </section>
+          </div>
+
+          <div className="match-detail-team team2">
+            <div className="match-detail-team-head right">
+              <div>
+                <p>Practice</p>
+                <h2>{practiceRound.shortName}</h2>
+              </div>
+              <TeamLogo src={TEAM_BRANDING.team1.logo} alt="Practice" size={34} />
+            </div>
+          </div>
+        </section>
+
+        <section className="scorecard-shell">
+          <div className="scorecard-wrap">
+            <table className="scorecard">
+              <thead>
+                <tr>
+                  <th className="scorecard-name">Hole</th>
+                  {FRONT_HOLES.map((hole) => <th key={hole}>{hole}</th>)}
+                  <th>OUT</th>
+                  <th>NET</th>
+                </tr>
+
+                <tr>
+                  <th className="scorecard-name">Yds</th>
+                  {practiceRound.yards.map((yards, index) => <th key={index}>{yards}</th>)}
+                  <th></th>
+                  <th></th>
+                </tr>
+
+                <tr>
+                  <th className="scorecard-name">Par</th>
+                  {practiceRound.par.map((par, index) => <th key={index}>{par}</th>)}
+                  <th>{totalPar}</th>
+                  <th></th>
+                </tr>
+
+                <tr>
+                  <th className="scorecard-name">HCP</th>
+                  {practiceRound.hcp.map((hcp, index) => <th key={index}>{hcp}</th>)}
+                  <th></th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr className="divider">
+                  <td colSpan="11">{displayName}</td>
+                </tr>
+
+                <tr>
+                  <td className="scorecard-name">
+                    Score
+                    <small className="net-note"> Net {netTotal || "-"}</small>
+                  </td>
+
+                  {FRONT_HOLES.map((hole) => (
+                    <td key={hole}>
+                      <input
+                        className="score-input"
+                        type="number"
+                        min="1"
+                        value={getScore(selectedPracticeRoundId, playerKey, hole)}
+                        onChange={(event) =>
+                          updateScore(selectedPracticeRoundId, playerKey, hole, event.target.value)
+                        }
+                      />
+                      {getPracticeHoleStrokes(playerKey, selectedPracticeRoundId, hole) > 0 && (
+                        <span className="pop-star" aria-label="Handicap stroke">
+                          {getPracticeHoleStrokes(playerKey, selectedPracticeRoundId, hole) > 1 ? "**" : "*"}
+                        </span>
+                      )}
+                    </td>
+                  ))}
+
+                  <td className="score-total">{grossTotal || "-"}</td>
+                  <td className="score-total">{netTotal || "-"}</td>
+                </tr>
+
+                <tr className="result-row">
+                  <td className="scorecard-name">Net</td>
+                  {FRONT_HOLES.map((hole) => (
+                    <td key={hole}>{getPracticeNetScore(selectedPracticeRoundId, playerKey, hole) || "-"}</td>
+                  ))}
+                  <td>{netTotal || "-"}</td>
+                  <td>{netTotal || "-"}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
       </>
     );
@@ -1680,9 +1766,7 @@ function App() {
                         <span>{summary.status}</span>
                       </div>
 
-                      <strong>
-                        {summary.full.teamAScore} - {summary.full.teamBScore}
-                      </strong>
+                      <strong>{summary.full.teamAScore} - {summary.full.teamBScore}</strong>
                     </button>
                   );
                 })}
@@ -2050,13 +2134,9 @@ function App() {
 
                 <tr className="result-row">
                   <td className="scorecard-name">Result</td>
-
                   {FRONT_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
-
                   <td>{summary.front.teamAScore}-{summary.front.teamBScore}</td>
-
                   {BACK_HOLES.map((hole) => <td key={hole}>{getHoleResult(matchup, hole)}</td>)}
-
                   <td>{summary.back.teamAScore}-{summary.back.teamBScore}</td>
                   <td>{summary.full.teamAScore}-{summary.full.teamBScore}</td>
                 </tr>
@@ -2077,7 +2157,8 @@ function App() {
           {activeTab === "home" && <HomeView />}
           {activeTab === "enter" && <EnterScoresView />}
           {activeTab === "matchups" && <MatchupsView />}
-          {activeTab === "practice" && <PracticeView />}
+          {activeTab === "practice" &&
+            (selectedPracticeCardPlayer ? <PracticeScorecardView /> : <PracticeView />)}
           {activeTab === "setup" && <SetupView />}
         </>
       )}
